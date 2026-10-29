@@ -1,0 +1,21 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Consolidado.Api/Consolidado.Api.csproj" />
+    <Project Path="src/Consolidado.Domain/Consolidado.Domain.csproj" />
+    <Project Path="src/Consolidado.Infrastructure/Consolidado.Infrastructure.csproj" />
+    <Project Path="src/Contingencia.ClienteExemplo/Contingencia.ClienteExemplo.csproj" />
+    <Project Path="src/Lancamentos.Api/Lancamentos.Api.csproj" />
+    <Project Path="src/Lancamentos.Domain/Lancamentos.Domain.csproj" />
+    <Project Path="src/Lancamentos.Infrastructure/Lancamentos.Infrastructure.csproj" />
+    <Project Path="src/Shared.Contracts/Shared.Contracts.csproj" />
+    <Project Path="src/Shared.Security/Shared.Security.csproj" />
+    <Project Path="src/StatusPage.Api/StatusPage.Api.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Consolidado.Tests/Consolidado.Tests.csproj" />
+    <Project Path="tests/Lancamentos.Tests/Lancamentos.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/Seed.ConsoleApp/Seed.ConsoleApp.csproj" />
+  </Folder>
+</Solution>

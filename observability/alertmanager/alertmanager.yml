@@ -1,0 +1,25 @@
+global:
+  resolve_timeout: 5m
+
+route:
+  receiver: operacoes-padrao
+  group_by: ["alertname", "servico"]
+  group_wait: 10s
+  group_interval: 1m
+  repeat_interval: 1h
+  routes:
+    - match:
+        severidade: critica
+      receiver: operacoes-critico
+      repeat_interval: 15m
+
+receivers:
+  - name: operacoes-padrao
+    webhook_configs:
+      - url: "http://host.docker.internal:9999/alertas/padrao"
+        send_resolved: true
+
+  - name: operacoes-critico
+    webhook_configs:
+      - url: "http://host.docker.internal:9999/alertas/critico"
+        send_resolved: true

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Status da Plataforma</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 640px; margin: 48px auto; padding: 0 16px; color: #1a1a1a; }
+  h1 { font-size: 1.4rem; }
+  .servico { display: flex; justify-content: space-between; align-items: center; padding: 16px; border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 12px; }
+  .badge { padding: 4px 12px; border-radius: 999px; font-size: 0.85rem; font-weight: 600; color: #fff; }
+  .Operacional { background: #1a8f4c; }
+  .Degradado { background: #d08c00; }
+  .Indisponivel { background: #c43b3b; }
+  #atualizado { color: #666; font-size: 0.85rem; margin-top: 24px; }
+</style>
+</head>
+<body>
+  <h1>Status da Plataforma de Fluxo de Caixa</h1>
+  <div id="servicos">Carregando...</div>
+  <div id="atualizado"></div>
+
+  <script>
+    async function carregar() {
+      const container = document.getElementById('servicos');
+      try {
+        const resposta = await fetch('/api/status');
+        const dados = await resposta.json();
+
+        container.innerHTML = dados.map(item =>
+          `<div class="servico"><span>${item.servico}</span><span class="badge ${item.status}">${item.status}</span></div>`
+        ).join('');
+
+        document.getElementById('atualizado').textContent = 'Atualizado em ' + new Date().toLocaleTimeString('pt-BR');
+      } catch {
+        container.innerHTML = '<p>Não foi possível obter o status no momento.</p>';
+      }
+    }
+
+    carregar();
+    setInterval(carregar, 15000);
+  </script>
+</body>
+</html>

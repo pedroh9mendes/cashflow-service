@@ -1,0 +1,119 @@
+{
+  "title": "Fluxo de Caixa - Operacional",
+  "uid": "fluxo-caixa-operacional",
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "10s",
+  "time": { "from": "now-1h", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Lançamentos registrados/segundo",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        { "expr": "rate(lancamentos_registrados_total[1m])", "legendFormat": "lançamentos/s" }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Latência p95 por serviço",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, servico))",
+          "legendFormat": "{{servico}} p95"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Profundidade da fila RabbitMQ",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "targets": [
+        { "expr": "consolidado_fila_profundidade", "legendFormat": "mensagens pendentes" }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Estado do Circuit Breaker (Modo Contingência)",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "targets": [
+        { "expr": "circuit_breaker_estado", "legendFormat": "0 = Normal, 1 = Contingência" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "type": "value", "options": { "0": { "text": "Normal", "color": "green" } } },
+            { "type": "value", "options": { "1": { "text": "Contingência", "color": "red" } } }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 1 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 5,
+      "title": "Taxa de erro (4xx/5xx) por serviço",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "targets": [
+        {
+          "expr": "sum(rate(http_request_duration_seconds_count{code=~\"4..|5..\"}[5m])) by (servico, code)",
+          "legendFormat": "{{servico}} {{code}}"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Card de Saturação / Dimensionamento",
+      "description": "Faixas verde (<60%), amarelo (60-85%) e vermelho (>85%) sobre profundidade da fila, latência p95 e taxa de erro - ver docs/observability.md",
+      "type": "gauge",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "targets": [
+        { "expr": "consolidado_fila_profundidade", "legendFormat": "profundidade da fila" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 60 },
+              { "color": "red", "value": 85 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 7,
+      "title": "Eventos duplicados descartados (idempotência)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 24 },
+      "targets": [
+        { "expr": "rate(consolidado_eventos_duplicados_total[5m])", "legendFormat": "duplicados/s" }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Eventos com falha de publicação no Outbox",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 24 },
+      "targets": [
+        { "expr": "rate(outbox_eventos_falha_publicacao_total[5m])", "legendFormat": "falhas/s" }
+      ]
+    }
+  ]
+}

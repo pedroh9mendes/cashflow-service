@@ -1,0 +1,51 @@
+# Build outputs
+bin/
+obj/
+out/
+
+# Visual Studio / Rider / VS Code
+.vs/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.idea/
+
+# Resultados de teste
+TestResults/
+*.trx
+
+# Logs
+logs/
+*.log
+
+# Bancos de dados locais (SQLite da prova de conceito da Camada 3)
+*.db
+*.db-shm
+*.db-wal
+
+# Segredos locais (nunca versionar)
+appsettings.*.local.json
+.env
+.env.local
+
+# Pacotes NuGet restaurados
+*.nupkg
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Arquivos de sistema operacional
+.DS_Store
+Thumbs.db
+
+# Dados de runtime do Docker (não versionar volumes)
+**/pgdata/
+**/mssql-data/
+
+# Artefatos internos de ferramentas locais
+.claude/
+
+# Documento original do desafio (material recebido do processo seletivo)
+Desafio - Arq. Soluções.pdf

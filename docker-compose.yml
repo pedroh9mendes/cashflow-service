@@ -1,0 +1,164 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: fluxocaixa-sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "Fluxo@Caixa2026!"
+      MSSQL_PID: "Developer"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q 'SELECT 1' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - fluxocaixa
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: fluxocaixa-rabbitmq
+    user: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_ERLANG_COOKIE: "fluxocaixa-dev-cookie"
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_running"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - fluxocaixa
+
+  lancamentos-api:
+    build:
+      context: .
+      dockerfile: src/Lancamentos.Api/Dockerfile
+    container_name: fluxocaixa-lancamentos-api
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__LancamentosDb: "Server=sqlserver,1433;Database=LancamentosDb;User Id=sa;Password=Fluxo@Caixa2026!;TrustServerCertificate=True;"
+      ConnectionStrings__RabbitMq: "amqp://guest:guest@rabbitmq:5672"
+      RabbitMq__HostName: rabbitmq
+      Jwt__Issuer: fluxo-caixa-platform
+      Jwt__Audience: fluxo-caixa-clients
+      Jwt__SigningKey: "CHANGE_ME_MINIMUM_32_CHARACTERS_SECRET"
+    ports:
+      - "5080:8080"
+    networks:
+      - fluxocaixa
+
+  consolidado-api:
+    build:
+      context: .
+      dockerfile: src/Consolidado.Api/Dockerfile
+    container_name: fluxocaixa-consolidado-api
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      lancamentos-api:
+        condition: service_started
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__ConsolidadoDb: "Server=sqlserver,1433;Database=ConsolidadoDb;User Id=sa;Password=Fluxo@Caixa2026!;TrustServerCertificate=True;"
+      ConnectionStrings__RabbitMq: "amqp://guest:guest@rabbitmq:5672"
+      RabbitMq__HostName: rabbitmq
+      Jwt__Issuer: fluxo-caixa-platform
+      Jwt__Audience: fluxo-caixa-clients
+      Jwt__SigningKey: "CHANGE_ME_MINIMUM_32_CHARACTERS_SECRET"
+    ports:
+      - "5090:8080"
+    networks:
+      - fluxocaixa
+
+  statuspage-api:
+    build:
+      context: .
+      dockerfile: src/StatusPage.Api/Dockerfile
+    container_name: fluxocaixa-statuspage-api
+    depends_on:
+      - lancamentos-api
+      - consolidado-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      StatusPage__LancamentosHealthUrl: "http://lancamentos-api:8080/health"
+      StatusPage__ConsolidadoHealthUrl: "http://consolidado-api:8080/health"
+    ports:
+      - "5100:8080"
+    networks:
+      - fluxocaixa
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: fluxocaixa-prometheus
+    volumes:
+      - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./observability/prometheus/alert-rules.yml:/etc/prometheus/alert-rules.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    depends_on:
+      - lancamentos-api
+      - consolidado-api
+    networks:
+      - fluxocaixa
+
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    container_name: fluxocaixa-alertmanager
+    volumes:
+      - ./observability/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    ports:
+      - "9093:9093"
+    networks:
+      - fluxocaixa
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: fluxocaixa-grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+    volumes:
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - fluxocaixa
+
+volumes:
+  sqlserver-data:
+  rabbitmq-data:
+  prometheus-data:
+  grafana-data:
+
+networks:
+  fluxocaixa:
+    driver: bridge

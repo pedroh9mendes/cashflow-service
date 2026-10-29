@@ -1,0 +1,38 @@
+groups:
+  - name: fluxo-caixa-alertas
+    rules:
+      - alert: FilaCrescendoSemConsumo
+        expr: consolidado_fila_profundidade > 100
+        for: 1m
+        labels:
+          severidade: critica
+        annotations:
+          summary: "Fila de lançamentos acumulando mensagens sem consumo correspondente"
+          descricao: "A profundidade da fila de eventos ultrapassou 100 mensagens pendentes por mais de 1 minuto, indicando que o Consolidado pode estar fora do ar ou processando mais lento que a entrada."
+
+      - alert: CircuitBreakerAberto
+        expr: circuit_breaker_estado == 1
+        for: 10s
+        labels:
+          severidade: critica
+        annotations:
+          summary: "Modo contingência ativado no serviço de Lançamentos"
+          descricao: "O circuit breaker abriu e o serviço está gravando no ambiente espelho (ver ADR-007/ADR-008)."
+
+      - alert: TaxaDeErroElevada
+        expr: sum(rate(http_request_duration_seconds_count{code=~"5.."}[5m])) by (servico) / sum(rate(http_request_duration_seconds_count[5m])) by (servico) > 0.05
+        for: 2m
+        labels:
+          severidade: alta
+        annotations:
+          summary: "Taxa de erro acima do limiar"
+          descricao: "O serviço {{ $labels.servico }} está retornando mais de 5% de respostas 5xx nos últimos 5 minutos."
+
+      - alert: SaturacaoFilaFaixaVermelha
+        expr: consolidado_fila_profundidade > 50
+        for: 2m
+        labels:
+          severidade: alta
+        annotations:
+          summary: "Card de saturação na faixa vermelha"
+          descricao: "A profundidade da fila ultrapassou o limiar da faixa vermelha (85% da capacidade estimada), indicando necessidade de ação imediata de dimensionamento."
