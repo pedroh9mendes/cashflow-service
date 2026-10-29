@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CashFlow Service — Status dos serviços</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="status.css">
+</head>
+<body>
+
+<div class="pagina">
+
+  <header class="topo">
+    <div class="marca-logo">
+      <img src="../assets/carrefour-banco-logo.png" alt="Carrefour Banco" />
+    </div>
+    <div class="marca-texto">
+      <h1>CashFlow Service</h1>
+      <p>Status dos serviços</p>
+    </div>
+  </header>
+
+  <main class="conteudo">
+
+    <div class="resumo-geral" id="resumo-geral">
+      <span class="resumo-icone" id="resumo-icone">⏳</span>
+      <div>
+        <h2 id="resumo-titulo">Verificando…</h2>
+        <p id="resumo-legenda">Consultando o status atual dos serviços.</p>
+      </div>
+    </div>
+
+    <div class="grid-status" id="grid-status">
+      <div class="card-status">
+        <span class="status-nome">Carregando…</span>
+      </div>
+    </div>
+
+    <p class="atualizacao" id="atualizacao"></p>
+
+    <div class="ajuda-caixa">
+      <strong>Instabilidade na sua conexão com o CashFlow Service?</strong>
+      <p>
+        Se os serviços abaixo estiverem marcados como <strong>Operacional</strong> mas você
+        continua enfrentando falhas ao usar a plataforma, o problema é mais provável que esteja na
+        sua conexão local ou em uma integração específica do seu ambiente — não na plataforma.
+        Nesse caso, entre em contato com o suporte informando o horário observado.
+      </p>
+    </div>
+
+  </main>
+
+  <footer class="rodape">
+    Esta página é pública e não exige autenticação. Atualiza automaticamente a cada 15 segundos.
+  </footer>
+
+</div>
+
+<script src="status.js"></script>
+</body>
+</html>

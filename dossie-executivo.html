@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CashFlow Service — Dossiê de Visão e Arquitetura</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cor-primaria: #2b4b9b;
+  --cor-primaria-escura: #1c3570;
+  --cor-primaria-clara: #e9edf9;
+  --cor-destaque: #1facdd;
+  --cor-destaque-escura: #1587b0;
+  --cor-fundo: #f3f5fa;
+  --cor-superficie: #ffffff;
+  --cor-borda: #e1e6f0;
+  --cor-texto: #16213e;
+  --cor-texto-secundario: #5c6a8a;
+  --cor-sucesso: #1a8f4c;
+  --cor-alerta: #c77700;
+  --cor-erro: #c43b3b;
+  --raio: 12px;
+  --raio-pequeno: 8px;
+  --sombra: 0 1px 2px rgba(23,33,70,.06), 0 1px 3px rgba(23,33,70,.08);
+  --sombra-elevada: 0 4px 20px rgba(23,33,70,.14);
+  --fonte: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: var(--fonte);
+  background: var(--cor-fundo);
+  color: var(--cor-texto);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+code {
+  background: var(--cor-primaria-clara);
+  color: var(--cor-primaria-escura);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: .88em;
+  font-family: "SFMono-Regular", Consolas, Menlo, monospace;
+}
+
+/* ===== Navegação fixa ===== */
+.nav-lateral {
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  width: 270px;
+  background: var(--cor-primaria-escura);
+  color: #fff;
+  overflow-y: auto;
+  padding: 24px 0 40px;
+  z-index: 50;
+}
+.nav-marca {
+  padding: 0 20px 20px;
+  border-bottom: 1px solid rgba(255,255,255,.15);
+  margin-bottom: 16px;
+}
+.nav-marca strong { font-size: 1.05rem; display: block; }
+.nav-marca span { font-size: .76rem; color: rgba(255,255,255,.65); }
+.nav-lateral a {
+  display: block;
+  color: rgba(255,255,255,.82);
+  text-decoration: none;
+  font-size: .82rem;
+  padding: 7px 20px;
+  border-left: 3px solid transparent;
+}
+.nav-lateral a:hover { background: rgba(255,255,255,.08); color: #fff; }
+.nav-secao-titulo {
+  font-size: .68rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: rgba(255,255,255,.5);
+  padding: 16px 20px 6px;
+  font-weight: 700;
+}
+
+.conteudo-principal { margin-left: 270px; }
+
+/* ===== Páginas/seções editoriais ===== */
+.pagina {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 56px 48px;
+  border-bottom: 1px solid var(--cor-borda);
+}
+.pagina:last-of-type { border-bottom: none; }
+
+.rotulo-secao {
+  display: inline-block;
+  background: var(--cor-primaria-clara);
+  color: var(--cor-primaria-escura);
+  font-size: .72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  padding: 5px 12px;
+  border-radius: 999px;
+  margin-bottom: 14px;
+}
+h1 { font-size: 2rem; letter-spacing: -.02em; margin: 0 0 8px; }
+h2 { font-size: 1.5rem; letter-spacing: -.01em; margin: 0 0 16px; }
+h3 { font-size: 1.1rem; margin: 28px 0 10px; }
+h4 { font-size: .95rem; margin: 18px 0 6px; color: var(--cor-primaria-escura); }
+p { margin: 0 0 14px; }
+.subtitulo { color: var(--cor-texto-secundario); font-size: 1.05rem; margin-bottom: 28px; }
+
+/* ===== Capa ===== */
+.capa {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--cor-primaria-escura) 0%, var(--cor-primaria) 55%, var(--cor-destaque) 140%);
+  color: #fff;
+  padding: 80px 64px;
+}
+.capa .rotulo-secao { background: rgba(255,255,255,.15); color: #fff; }
+.capa h1 { font-size: 3rem; max-width: 820px; }
+.capa .proposta { font-size: 1.3rem; max-width: 700px; color: rgba(255,255,255,.88); margin-bottom: 40px; }
+.capa-meta {
+  display: flex;
+  gap: 40px;
+  flex-wrap: wrap;
+  border-top: 1px solid rgba(255,255,255,.25);
+  padding-top: 24px;
+  margin-top: 24px;
+}
+.capa-meta div strong { display: block; font-size: .95rem; }
+.capa-meta div span { font-size: .78rem; color: rgba(255,255,255,.65); }
+
+/* ===== Cards e grids ===== */
+.grid { display: grid; gap: 16px; }
+.grid-2 { grid-template-columns: 1fr 1fr; }
+.grid-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-4 { grid-template-columns: repeat(4, 1fr); }
+.card {
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  padding: 20px 22px;
+  box-shadow: var(--sombra);
+}
+.card h4 { margin-top: 0; }
+.card-destaque {
+  border-left: 4px solid var(--cor-primaria);
+}
+.card-metrica {
+  text-align: center;
+}
+.card-metrica .valor {
+  font-size: 1.9rem;
+  font-weight: 800;
+  color: var(--cor-primaria-escura);
+  letter-spacing: -.02em;
+}
+.card-metrica .rotulo {
+  font-size: .76rem;
+  color: var(--cor-texto-secundario);
+  text-transform: uppercase;
+  letter-spacing: .03em;
+}
+
+/* ===== Tabelas ===== */
+table { width: 100%; border-collapse: collapse; font-size: .88rem; margin: 16px 0; }
+th, td { border: 1px solid var(--cor-borda); padding: 9px 12px; text-align: left; vertical-align: top; }
+th { background: var(--cor-primaria-clara); color: var(--cor-primaria-escura); font-weight: 700; font-size: .78rem; text-transform: uppercase; letter-spacing: .02em; }
+tr:nth-child(even) td { background: #fafbfd; }
+.tabela-larga { overflow-x: auto; }
+
+/* ===== Caixas de destaque ===== */
+.caixa-info {
+  background: var(--cor-primaria-clara);
+  border-left: 4px solid var(--cor-primaria);
+  border-radius: 0 var(--raio-pequeno) var(--raio-pequeno) 0;
+  padding: 16px 20px;
+  margin: 18px 0;
+  font-size: .9rem;
+}
+.caixa-alerta {
+  background: #fff6e8;
+  border-left: 4px solid var(--cor-alerta);
+  border-radius: 0 var(--raio-pequeno) var(--raio-pequeno) 0;
+  padding: 16px 20px;
+  margin: 18px 0;
+  font-size: .9rem;
+}
+.caixa-risco {
+  background: #fdeaea;
+  border-left: 4px solid var(--cor-erro);
+  border-radius: 0 var(--raio-pequeno) var(--raio-pequeno) 0;
+  padding: 16px 20px;
+  margin: 18px 0;
+  font-size: .9rem;
+}
+.caixa-hipotese {
+  background: #f1eefc;
+  border-left: 4px solid #7c5cd6;
+  border-radius: 0 var(--raio-pequeno) var(--raio-pequeno) 0;
+  padding: 14px 18px;
+  margin: 14px 0;
+  font-size: .85rem;
+  color: #4a3a8a;
+}
+
+/* ===== Badges ===== */
+.badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 999px; font-size: .72rem; font-weight: 700; }
+.badge-alta { background: #fdeaea; color: var(--cor-erro); }
+.badge-media { background: #fff6e8; color: var(--cor-alerta); }
+.badge-baixa { background: #e9f5ee; color: var(--cor-sucesso); }
+.badge-ok { background: #e9f5ee; color: var(--cor-sucesso); }
+
+/* ===== ADR cards ===== */
+.adr-card {
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  padding: 22px 26px;
+  margin-bottom: 20px;
+}
+.adr-card h4 { margin-top: 0; font-size: 1rem; color: var(--cor-texto); }
+.adr-tag { font-size: .68rem; font-weight: 700; color: var(--cor-primaria); text-transform: uppercase; letter-spacing: .04em; }
+.adr-secao-label { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--cor-texto-secundario); margin: 14px 0 4px; }
+.adr-alt { background: var(--cor-fundo); border-radius: var(--raio-pequeno); padding: 10px 14px; margin: 8px 0; font-size: .85rem; }
+.adr-alt strong { color: var(--cor-primaria-escura); }
+
+/* ===== Gráfico de barras simples (HTML/CSS) ===== */
+.grafico-barras { display: flex; align-items: flex-end; gap: 18px; height: 180px; margin: 20px 0 8px; padding: 0 10px; }
+.barra-grupo { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
+.barra { width: 100%; max-width: 64px; border-radius: 6px 6px 0 0; display: flex; align-items: flex-start; justify-content: center; color: #fff; font-size: .72rem; font-weight: 700; padding-top: 4px; }
+.barra-rotulo { font-size: .76rem; margin-top: 8px; color: var(--cor-texto-secundario); text-align: center; }
+.legenda-grafico { font-size: .74rem; color: var(--cor-texto-secundario); text-align: center; margin-top: 4px; }
+
+/* ===== Fluxo/jornada ===== */
+.jornada-etapa { display: flex; gap: 16px; margin-bottom: 18px; align-items: flex-start; }
+.jornada-numero {
+  flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%;
+  background: var(--cor-primaria); color: #fff; display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: .85rem;
+}
+.jornada-texto strong { display: block; margin-bottom: 2px; }
+.jornada-texto span { font-size: .85rem; color: var(--cor-texto-secundario); }
+
+/* ===== SVG diagrama container ===== */
+.diagrama-svg-wrap { background: var(--cor-superficie); border: 1px solid var(--cor-borda); border-radius: var(--raio); padding: 20px; margin: 18px 0; overflow-x: auto; }
+.diagrama-svg-wrap svg { display: block; margin: 0 auto; }
+
+/* ===== Checklist 7S ===== */
+.s7-card { background: var(--cor-superficie); border: 1px solid var(--cor-borda); border-radius: var(--raio); padding: 20px 24px; margin-bottom: 16px; }
+.s7-letra { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; background: var(--cor-primaria); color: #fff; font-weight: 800; font-size: 1rem; margin-right: 10px; vertical-align: middle; }
+.s7-campo { margin: 8px 0; font-size: .88rem; }
+.s7-campo b { color: var(--cor-primaria-escura); }
+
+/* ===== Sprint card ===== */
+.sprint-card { background: var(--cor-superficie); border: 1px solid var(--cor-borda); border-radius: var(--raio); padding: 22px 26px; margin-bottom: 18px; border-top: 4px solid var(--cor-destaque); }
+
+/* ===== Impressão ===== */
+@media print {
+  .nav-lateral { display: none; }
+  .conteudo-principal { margin-left: 0; }
+  .pagina { padding: 24px 0; max-width: 100%; break-inside: auto; }
+  .capa { min-height: auto; page-break-after: always; }
+  h2 { page-break-after: avoid; }
+  table { break-inside: auto; }
+  tr { break-inside: avoid; }
+  .card, .adr-card, .sprint-card, .s7-card { break-inside: avoid; }
+}
+
+@media (max-width: 900px) {
+  .nav-lateral { display: none; }
+  .conteudo-principal { margin-left: 0; }
+  .pagina { padding: 32px 20px; }
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  .capa { padding: 48px 24px; }
+  .capa h1 { font-size: 2rem; }
+}
+</style>
+</head>
+<body>
+
+<nav class="nav-lateral">
+  <div class="nav-marca">
+    <strong>CashFlow Service</strong>
+    <span>Dossiê de Visão e Arquitetura</span>
+  </div>
+  <a href="#capa">Capa</a>
+  <a href="#sumario">Sumário</a>
+  <a href="#tese">Tese de Investimento</a>
+  <a href="#contexto">Contexto e Premissas</a>
+
+  <div class="nav-secao-titulo">1. Alinhamento Organizacional</div>
+  <a href="#sete-s">McKinsey 7S</a>
+
+  <div class="nav-secao-titulo">2. Concepção do Produto</div>
+  <a href="#usuarios">Usuários e Jornada</a>
+  <a href="#mvp">MVP e Escopo</a>
+  <a href="#rnf">Requisitos Não Funcionais</a>
+
+  <div class="nav-secao-titulo">3. Arquitetura e Finanças</div>
+  <a href="#arquitetura">Arquitetura de Solução</a>
+  <a href="#adrs">Decisões Arquiteturais (ADRs)</a>
+  <a href="#equipe-investimento">Equipe e Investimento Inicial</a>
+  <a href="#custos-tco">Custos e TCO</a>
+  <a href="#business-case">Business Case</a>
+
+  <div class="nav-secao-titulo">4. Execução Ágil</div>
+  <a href="#backlog">Backlog e Sprints</a>
+  <a href="#dod">Definition of Done</a>
+
+  <div class="nav-secao-titulo">Fechamento</div>
+  <a href="#rastreabilidade">Rastreabilidade</a>
+  <a href="#riscos">Riscos</a>
+  <a href="#recomendacao">Recomendação</a>
+  <a href="#apendices">Apêndices</a>
+</nav>
+
+<div class="conteudo-principal">
+
+<!-- ===================== CAPA ===================== -->
+<section class="pagina capa" id="capa">
+  <span class="rotulo-secao">Dossiê de Visão e Arquitetura de Soluções</span>
+  <h1>CashFlow Service</h1>
+  <p class="proposta">Plataforma multi-tenant de controle de fluxo de caixa para a carteira de comerciantes do Banco Carrefour — elimina a reconciliação manual entre o controle de caixa operacional do comerciante e sua conta bancária, com disponibilidade de escrita isolada de falhas no serviço de consulta.</p>
+  <div class="capa-meta">
+    <div><strong>Versão</strong><span>1.0</span></div>
+    <div><strong>Data-base</strong><span>Outubro de 2026</span></div>
+    <div><strong>Horizonte financeiro</strong><span>36 meses, por comerciante ativo</span></div>
+    <div><strong>Moeda</strong><span>USD (infraestrutura), nominal</span></div>
+  </div>
+</section>
+
+<!-- ===================== SUMÁRIO ===================== -->
+<section class="pagina" id="sumario">
+  <span class="rotulo-secao">Sumário</span>
+  <h2>Mapa de leitura</h2>
+  <p class="subtitulo">Leitura executiva: Tese de Investimento → Business Case → Recomendação. Leitura técnica completa: do início ao fim, incluindo os 11 ADRs e o backlog de entrega.</p>
+  <div class="grid grid-2">
+    <div class="card">
+      <h4>Leitura executiva (~10 min)</h4>
+      <p style="font-size:.88rem">Tese de Investimento, Contexto e Premissas, Custos e TCO, Business Case, Recomendação.</p>
+    </div>
+    <div class="card">
+      <h4>Leitura técnica completa (~45 min)</h4>
+      <p style="font-size:.88rem">Todas as seções, incluindo McKinsey 7S, Design Thinking, os 11 ADRs com alternativas, e o plano de entrega Scrum.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== TESE DE INVESTIMENTO ===================== -->
+<section class="pagina" id="tese">
+  <span class="rotulo-secao">Síntese Executiva</span>
+  <h2>Tese de Investimento</h2>
+
+  <div class="grid grid-2">
+    <div class="card card-destaque">
+      <h4>Problema</h4>
+      <p>Comerciantes da carteira do banco controlam seu fluxo de caixa diário desconectado da conta bancária real (planilhas, sistemas próprios), exigindo reconciliação manual e sem visibilidade consolidada e confiável do saldo disponível.</p>
+    </div>
+    <div class="card card-destaque">
+      <h4>Solução</h4>
+      <p>Plataforma multi-tenant com dois serviços desacoplados — registro de lançamentos e consolidado de saldo diário — com disponibilidade de escrita garantida independentemente de falhas no serviço de consulta, e isolamento total de dados entre comerciantes.</p>
+    </div>
+  </div>
+
+  <h3>Requisitos de referência cobertos</h3>
+  <p>A solução endereça integralmente o escopo de referência do projeto: mapeamento de domínios e capacidades de negócio, requisitos funcionais e não funcionais mensuráveis, arquitetura alvo completa com justificativa de cada escolha tecnológica, suíte de testes automatizados, documentação operacional completa, e os quatro diferenciais adicionais — arquitetura de transição de legado, estimativa de custos de infraestrutura, observabilidade/monitoramento, e critérios de segurança para integração de serviços. O requisito não funcional central — <strong>o serviço de lançamentos não pode ficar indisponível se o serviço de consolidado diário cair, e o consolidado deve suportar 50 requisições por segundo em picos com até 5% de perda tolerada</strong> — é satisfeito estruturalmente pela separação em microsserviços com comunicação assíncrona (ver Arquitetura de Solução) e verificado objetivamente pelos critérios de aceite do backlog (US-04, ver Backlog e Sprints).
+
+  <div class="grid grid-4" style="margin-top:20px">
+    <div class="card card-metrica">
+      <div class="valor">$66,2 mil</div>
+      <div class="rotulo">Investimento inicial (faixa base)</div>
+    </div>
+    <div class="card card-metrica">
+      <div class="valor">6 semanas</div>
+      <div class="rotulo">Prazo (3 sprints)</div>
+    </div>
+    <div class="card card-metrica">
+      <div class="valor">$2,0 mil/mês</div>
+      <div class="rotulo">Operação (cenário base)</div>
+    </div>
+    <div class="card card-metrica">
+      <div class="valor">$90,7 mil</div>
+      <div class="rotulo">TCO 12 meses</div>
+    </div>
+  </div>
+
+  <h3>Maior risco</h3>
+  <div class="caixa-risco">
+    <strong>Dependência de competência em sistemas distribuídos.</strong> A arquitetura usa padrões de maior complexidade (CQRS, Outbox Pattern, Row-Level Security multi-tenant) que exigem experiência prévia da squad responsável — sem isso, o risco mais provável não é o sistema não funcionar, mas acumular dívida técnica silenciosa em mudanças futuras que comprometem os invariantes de segurança e consistência (ver McKinsey 7S, Staff/Skills).
+  </div>
+
+  <h3>Recomendação</h3>
+  <p><strong>Avançar</strong>, condicionado a: (1) alocação de ao menos dois desenvolvedores com experiência em sistemas distribuídos ou tempo de capacitação alocado antes do Sprint 1; (2) confirmação do regime de licenciamento Microsoft corporativo antes de comprometer a escolha de SQL Server Enterprise (ver ADR-003 e Custos e TCO); (3) formalização de pipeline de CI/CD antes de qualquer ambiente com usuários reais (ver McKinsey 7S, Systems). Ver seção Recomendação para o detalhamento completo.</p>
+</section>
+
+<!-- ===================== CONTEXTO E PREMISSAS ===================== -->
+<section class="pagina" id="contexto">
+  <span class="rotulo-secao">Fundamentação</span>
+  <h2>Contexto, Evidências e Premissas</h2>
+
+  <h3>Premissa central: plataforma multi-tenant, não um comerciante isolado</h3>
+  <p>O requisito de referência descreve o problema como "um comerciante" controlando seu fluxo de caixa. Lido isoladamente, isso sugeriria um sistema de uso único. Três elementos apontam para um cenário diferente:</p>
+
+  <table>
+    <tr><th>Evidência</th><th>Leitura</th></tr>
+    <tr><td>Carga do requisito não funcional: 50 req/s em picos</td><td>Incompatível com um único comerciante consultando o próprio saldo — compatível com centenas/milhares de comerciantes simultâneos</td></tr>
+    <tr><td>Natureza do contratante (instituição financeira com atuação em varejo)</td><td>Modelo de negócio B2B2C típico: produto para a carteira de comerciantes, não ferramenta interna de uso único</td></tr>
+    <tr><td>Simplicidade do domínio funcional (sem múltiplas contas, filiais, moedas)</td><td>Consistente com produto padronizado oferecido a muitos comerciantes, não sistema sob medida</td></tr>
+  </table>
+
+  <div class="caixa-info">
+    <strong>Por que essa premissa é segura mesmo se estiver errada:</strong> multi-tenancy com um único tenant ativo se comporta exatamente como um sistema de tenant único, sem custo funcional perceptível. O inverso não é verdadeiro — modelar sem isolamento de tenant e precisar adicionar depois exige retrabalho estrutural em todas as camadas. Entre as duas leituras possíveis, a multi-tenant é a que não compromete a solução no cenário alternativo.
+  </div>
+
+  <h3>Premissas derivadas</h3>
+  <table>
+    <tr><th>ID</th><th>Premissa</th><th>Efeito na arquitetura</th><th>Confiança</th></tr>
+    <tr><td>H01</td><td>Carteira de comerciantes heterogênea (porte pequeno a médio/grande)</td><td>Justifica quota elástica por tenant em vez de quota fixa (ADR-009)</td><td>Média</td></tr>
+    <tr><td>H02</td><td>Múltiplos canais de integração (app, ERPs parceiros, backoffice)</td><td>Justifica controle de origem por canal (ADR-010)</td><td>Média</td></tr>
+    <tr><td>H03</td><td>Contrato Microsoft corporativo pré-existente no banco</td><td>Motiva a escolha de SQL Server sobre PostgreSQL (ADR-003) — <strong>não confirmado</strong></td><td>Baixa — ver Riscos</td></tr>
+  </table>
+</section>
+
+<!-- ===================== 1. McKINSEY 7S ===================== -->
+<section class="pagina" id="sete-s">
+  <span class="rotulo-secao">1. Alinhamento Organizacional</span>
+  <h2>McKinsey 7S</h2>
+  <p class="subtitulo">Aplicado ao alinhamento necessário para que a squad responsável adote, opere e evolua esta plataforma com sucesso — não à organização interna completa do banco, fora do escopo de acesso desta análise.</p>
+
+  <div class="s7-card">
+    <h4><span class="s7-letra">S</span>Strategy</h4>
+    <div class="s7-campo"><b>Estado necessário:</b> plataforma tratada como produto multi-tenant de longo prazo, com evolução guiada por métricas de adoção e saúde operacional.</div>
+    <div class="s7-campo"><b>Lacuna:</b> premissa multi-tenant documentada, mas sem dono de produto formal nem métricas de North Star além dos RNFs técnicos.</div>
+    <div class="s7-campo"><b>Ação / Responsável:</b> nomear Product Owner para priorizar o backlog por valor de carteira — Product Owner / Tech Lead da squad.</div>
+    <div class="s7-campo"><b>Evidência de sucesso:</b> backlog revisado trimestralmente com critério de priorização rastreável.</div>
+  </div>
+
+  <div class="s7-card">
+    <h4><span class="s7-letra">S</span>Structure</h4>
+    <div class="s7-campo"><b>Estado necessário:</b> squad organizada em torno dos dois bounded contexts (Lançamentos, Consolidado), refletindo a separação de código.</div>
+    <div class="s7-campo"><b>Lacuna:</b> falta formalizar rotação entre os dois contextos para evitar silos de conhecimento sobre consistência eventual.</div>
+    <div class="s7-campo"><b>Ação / Responsável:</b> squad organizada por domínio, não por camada técnica — Engineering Manager.</div>
+    <div class="s7-campo"><b>Evidência de sucesso:</b> qualquer desenvolvedor explica a separação de serviços sem consultar documentação.</div>
+  </div>
+
+  <div class="s7-card">
+    <h4><span class="s7-letra">S</span>Systems</h4>
+    <div class="s7-campo"><b>Estado necessário:</b> pipeline de CI/CD automatizado e runbook de resposta a incidentes usando os sinais já instrumentados.</div>
+    <div class="s7-campo"><b>Lacuna:</b> instrumentação existe; pipeline de CI/CD real e runbook formal não fazem parte do escopo atual do repositório.</div>
+    <div class="s7-campo"><b>Ação / Responsável:</b> formalizar CI (build, testes, scan de dependências) e runbook mínimo antes de qualquer implantação real — time de Plataforma/SRE.</div>
+    <div class="s7-campo"><b>Evidência de sucesso:</b> incidente simulado resolvido seguindo o runbook, sem ação ad-hoc.</div>
+  </div>
+
+  <div class="s7-card">
+    <h4><span class="s7-letra">S</span>Shared Values</h4>
+    <div class="s7-campo"><b>Estado necessário:</b> cultura de defesa em profundidade e transparência sobre limitações — decisões documentadas com alternativas e riscos declarados abertamente.</div>
+    <div class="s7-campo"><b>Lacuna:</b> nenhuma identificada no material produzido; risco é o padrão não se manter sob pressão de prazo futura.</div>
+    <div class="s7-campo"><b>Ação / Responsável:</b> ADR como parte da Definition of Done — toda a squad, reforçado pelo Tech Lead.</div>
+    <div class="s7-campo"><b>Evidência de sucesso:</b> nenhuma decisão relevante chega à produção sem ADR correspondente.</div>
+  </div>
+
+  <div class="s7-card">
+    <h4><span class="s7-letra">S</span>Style</h4>
+    <div class="s7-campo"><b>Estado necessário:</b> liderança técnica que privilegia decisões reversíveis e defensáveis sobre modismos — nenhuma escolha arquitetural foi feita por tendência.</div>
+    <div class="s7-campo"><b>Lacuna:</b> depende de quem lidera a squad no futuro; risco de complexidade não justificada (ex: Kubernetes sem gatilho objetivo).</div>
+    <div class="s7-campo"><b>Ação / Responsável:</b> toda mudança estrutural deve responder "qual RNF motiva isso" — Tech Lead / Arquiteto.</div>
+    <div class="s7-campo"><b>Evidência de sucesso:</b> ADRs futuros mantêm o formato Contexto → Decisão → Alternativas → Consequências.</div>
+  </div>
+
+  <div class="s7-card">
+    <h4><span class="s7-letra">S</span>Staff</h4>
+    <div class="s7-campo"><b>Estado necessário:</b> squad cobrindo .NET/ASP.NET Core, SQL Server, RabbitMQ e observabilidade — o conjunto mínimo para operar o implementado.</div>
+    <div class="s7-campo"><b>Lacuna:</b> uma squad em regime permanente precisa de ao menos dois desenvolvedores com sistemas distribuídos para evitar ponto único de conhecimento.</div>
+    <div class="s7-campo"><b>Ação / Responsável:</b> pareamento nos primeiros sprints, nos pontos de maior complexidade (Outbox, circuit breaker, RLS) — Engineering Manager.</div>
+    <div class="s7-campo"><b>Evidência de sucesso:</b> mais de uma pessoa depura um problema de idempotência sem depender do autor original.</div>
+  </div>
+
+  <div class="s7-card">
+    <h4><span class="s7-letra">S</span>Skills</h4>
+    <div class="s7-campo"><b>Estado necessário:</b> domínio prático de consistência eventual, isolamento multi-tenant e resiliência distribuída — não apenas conhecimento teórico.</div>
+    <div class="s7-campo"><b>Lacuna:</b> padrões de maior complexidade que CRUD convencional; curva de aprendizado real sem experiência prévia.</div>
+    <div class="s7-campo"><b>Ação / Responsável:</b> usar os ADRs e diagramas como material de onboarding técnico — Tech Lead.</div>
+    <div class="s7-campo"><b>Evidência de sucesso:</b> novo integrante explica o fluxo ponta a ponta de um lançamento após uma semana.</div>
+  </div>
+
+  <h3>Desalinhamentos que mais ameaçam o sucesso</h3>
+  <div class="caixa-risco">
+    <strong>1. Staff/Skills</strong> — padrões de maior complexidade entregues a uma squad sem experiência tendem a acumular dívida técnica silenciosa: o código continua funcionando, mas decisões futuras deixam de respeitar invariantes de segurança (ex: remover o filtro de tenant achando que o RLS sozinho basta).<br><br>
+    <strong>2. Systems</strong> — ausência de pipeline de CI/CD e runbook formal significa que a validação de funcionamento depende hoje de execução manual; precisa ser corrigido antes de qualquer ambiente com usuários reais.
+  </div>
+</section>
+
+<!-- ===================== 2. USUÁRIOS E JORNADA ===================== -->
+<section class="pagina" id="usuarios">
+  <span class="rotulo-secao">2. Concepção do Produto — Design Thinking</span>
+  <h2>Usuários, Jornada e Validação de Valor</h2>
+
+  <h3>Quem usa, quem paga, quem administra</h3>
+  <table>
+    <tr><th>Papel</th><th>Quem é</th><th>Interage com</th></tr>
+    <tr><td><strong>Usuário final</strong></td><td>Comerciante (lojista parceiro do banco) ou seu sistema de retaguarda</td><td>API de Lançamentos e API de Consolidado</td></tr>
+    <tr><td><strong>Pagador/Patrocinador</strong></td><td>Banco Carrefour, como provedor da plataforma</td><td>Patrocina a existência do serviço, não interage diretamente</td></tr>
+    <tr><td><strong>Administrador/Operação</strong></td><td>Equipe de TI/operações do banco</td><td>Painel operacional (scripts, métricas, documentação)</td></tr>
+    <tr><td><strong>Beneficiário indireto</strong></td><td>TI do comerciante, diagnosticando instabilidade</td><td>Status page pública, sem autenticação</td></tr>
+  </table>
+
+  <h3>Proto-persona: o comerciante operando o fluxo de caixa</h3>
+  <div class="caixa-hipotese">Proto-persona construída por inferência do domínio, não por entrevista real. Tratar como hipótese a validar, não como fato de mercado.</div>
+
+  <div class="card" style="margin-top:12px">
+    <p><strong>Marcos</strong>, dono de uma loja de material de construção de médio porte, cliente do Banco Carrefour. Registra dezenas de lançamentos por dia (vendas, pagamentos a fornecedores) e precisa saber, ao final do dia, se o caixa fechou positivo — hoje possivelmente em planilha ou sistema de retaguarda próprio, sem integração com o banco.</p>
+    <p><strong>Dor:</strong> falta de visibilidade consolidada e em tempo quase real do fluxo de caixa integrado à conta bancária — hoje saldo bancário e controle de caixa vivem desconectados, exigindo reconciliação manual.</p>
+    <p><strong>Jobs-to-be-done:</strong> "Quando eu registro uma venda ou pagamento, quero que meu saldo consolidado reflita isso rapidamente, para saber quanto dinheiro tenho disponível sem reconciliar sistemas manualmente."</p>
+  </div>
+
+  <h3>Jornada: atual → futura</h3>
+  <div class="jornada-etapa">
+    <div class="jornada-numero">1</div>
+    <div class="jornada-texto"><strong>Registrar um lançamento</strong><span>Hoje: anotado em planilha desconectada do banco → Futuro: <code>POST /api/lancamentos</code> via app ou integração ERP</span></div>
+  </div>
+  <div class="jornada-etapa">
+    <div class="jornada-numero">2</div>
+    <div class="jornada-texto"><strong>Consultar saldo do dia</strong><span>Hoje: soma manual sem relação com o banco → Futuro: <code>GET /api/consolidado/saldo-diario</code>, saldo pré-calculado em milissegundos</span></div>
+  </div>
+  <div class="jornada-etapa">
+    <div class="jornada-numero">3</div>
+    <div class="jornada-texto"><strong>Diagnosticar uma falha percebida</strong><span>Hoje: liga para o suporte sem saber de quem é o problema → Futuro: consulta a status page pública antes de abrir chamado</span></div>
+  </div>
+  <div class="jornada-etapa">
+    <div class="jornada-numero">4</div>
+    <div class="jornada-texto"><strong>Operar em indisponibilidade total</strong><span>Hoje: fica sem registrar nada → Futuro: persistência local permite continuar offline, sincronizando depois sem duplicação</span></div>
+  </div>
+
+  <h3>Hipótese de valor e experimento de validação</h3>
+  <p><strong>Hipótese:</strong> comerciantes que integram o fluxo de caixa diretamente com a conta bancária reduzem o tempo gasto em controle financeiro e cometem menos erros de caixa.</p>
+  <table>
+    <tr><th>Elemento</th><th>Definição</th></tr>
+    <tr><td>Método</td><td>Piloto controlado com 20–30 comerciantes voluntários de um mesmo segmento</td></tr>
+    <tr><td>Métrica</td><td>Tempo médio de reconciliação manual/semana; taxa de divergência entre saldo percebido e real</td></tr>
+    <tr><td>Limiar de decisão</td><td>Redução proposta de 30% no tempo de reconciliação, sustentada por 4+ semanas (hipótese de ponto de partida, não dado de mercado)</td></tr>
+  </table>
+</section>
+
+<!-- ===================== MVP E ESCOPO ===================== -->
+<section class="pagina" id="mvp">
+  <span class="rotulo-secao">2. Concepção do Produto</span>
+  <h2>MVP: Dentro e Fora de Escopo</h2>
+
+  <div class="grid grid-2">
+    <div class="card" style="border-left:4px solid var(--cor-sucesso)">
+      <h4>Dentro do escopo (implementado)</h4>
+      <ul style="font-size:.88rem; padding-left:18px">
+        <li>Registro de lançamentos com isolamento multi-tenant</li>
+        <li>Saldo diário consolidado, atualizado assincronamente</li>
+        <li>Resiliência: Consolidado cair não impede novos lançamentos</li>
+        <li>Autenticação e isolamento de dados (RLS + JWT)</li>
+        <li>Observabilidade operacional e status page pública</li>
+      </ul>
+    </div>
+    <div class="card" style="border-left:4px solid var(--cor-texto-secundario)">
+      <h4>Fora do escopo (evolução posterior)</h4>
+      <ul style="font-size:.88rem; padding-left:18px">
+        <li>Múltiplas contas, filiais ou moedas por comerciante</li>
+        <li>Conciliação automática com extrato bancário real</li>
+        <li>Relatórios históricos além do saldo diário</li>
+        <li>SDK oficial de borda para persistência local (hoje: prova de conceito)</li>
+        <li>Provedor de identidade real substituindo o endpoint de desenvolvimento</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Critérios</h3>
+  <p><strong>Critério de sucesso do MVP:</strong> um comerciante registra um lançamento e vê o saldo consolidado refletir a mudança em poucos segundos, mesmo sob os cenários de falha cobertos pelas três camadas de resiliência, sem vazamento de dados entre comerciantes.</p>
+  <p><strong>Critério para evoluir além do MVP:</strong> volume real de comerciantes ativos e padrão de uso apurados em produção determinam a priorização — ex: múltiplas filiais só se justificam se uma parcela relevante da carteira operar em mais de um ponto de venda.</p>
+</section>
+
+<!-- ===================== RNF ===================== -->
+<section class="pagina" id="rnf">
+  <span class="rotulo-secao">2. Concepção do Produto</span>
+  <h2>Requisitos Não Funcionais</h2>
+
+  <h3>Disponibilidade</h3>
+  <table>
+    <tr><th>Requisito</th><th>Meta</th><th>Origem</th></tr>
+    <tr><td>Lançamentos não indisponível por queda do Consolidado</td><td>Isolamento estrutural total</td><td>Explícito no requisito de referência</td></tr>
+    <tr><td>Disponibilidade de Lançamentos</td><td>99,9% mensal (~43 min/mês)</td><td>Assumido — criticidade de registro financeiro</td></tr>
+    <tr><td>Disponibilidade de Consolidado</td><td>99,5% mensal</td><td>Assumido — leitura não crítica em tempo real</td></tr>
+    <tr><td>Detecção de falha e ativação de contingência</td><td>&lt; 10 segundos</td><td>Circuit breaker (ADR-007/008)</td></tr>
+  </table>
+
+  <h3>Desempenho</h3>
+  <table>
+    <tr><th>Requisito</th><th>Meta</th><th>Origem</th></tr>
+    <tr><td>Vazão do Consolidado em pico</td><td><strong>50 requisições/segundo</strong></td><td>Explícito no requisito de referência</td></tr>
+    <tr><td>Perda de requisições em pico</td><td><strong>Até 5%</strong></td><td>Explícito no requisito de referência</td></tr>
+    <tr><td>Latência p95 leitura do saldo</td><td>&lt; 200ms</td><td>Assumido — read model materializado (ADR-004)</td></tr>
+    <tr><td>Latência p95 registro de lançamento</td><td>&lt; 300ms</td><td>Assumido — escrita transacional simples</td></tr>
+    <tr><td>Atraso de propagação até refletir no saldo</td><td>&lt; 5 segundos</td><td>Assumido — consistência eventual aceitável</td></tr>
+  </table>
+
+  <h3>Segurança e resiliência</h3>
+  <ul style="font-size:.9rem">
+    <li>Isolamento de dados entre tenants em duas camadas independentes (aplicação + Row-Level Security)</li>
+    <li>Nenhuma origem não cadastrada consegue consumir a API</li>
+    <li>Nenhum tenant degrada a experiência de outro por consumo excessivo</li>
+    <li>Nenhum lançamento perdido mesmo em falha total do backend (primário + espelho)</li>
+    <li>Toda transição de modo de contingência auditável e rastreável</li>
+  </ul>
+
+  <h3>Fora de escopo atual (evolução futura)</h3>
+  <p style="font-size:.9rem">Multi-região ativa-ativa; criptografia em repouso com gestão de chaves dedicada (Key Vault); testes de carga automatizados formais (k6 recomendado).</p>
+</section>
+
+<!-- ===================== ARQUITETURA ===================== -->
+<section class="pagina" id="arquitetura">
+  <span class="rotulo-secao">3. Arquitetura de Soluções</span>
+  <h2>Arquitetura de Solução</h2>
+  <p class="subtitulo">Dois microsserviços desacoplados, comunicação assíncrona, isolamento multi-tenant em múltiplas camadas.</p>
+
+  <h3>Diagrama de contexto</h3>
+  <div class="diagrama-svg-wrap">
+    <svg width="880" height="260" viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg" font-family="Inter, sans-serif">
+      <rect x="10" y="90" width="140" height="70" rx="10" fill="#e9edf9" stroke="#2b4b9b" stroke-width="1.5"/>
+      <text x="80" y="118" text-anchor="middle" font-size="12" font-weight="700" fill="#1c3570">Comerciante</text>
+      <text x="80" y="134" text-anchor="middle" font-size="10" fill="#5c6a8a">(Tenant)</text>
+
+      <rect x="10" y="10" width="140" height="60" rx="10" fill="#e9edf9" stroke="#2b4b9b" stroke-width="1.5"/>
+      <text x="80" y="36" text-anchor="middle" font-size="12" font-weight="700" fill="#1c3570">Equipe de</text>
+      <text x="80" y="52" text-anchor="middle" font-size="12" font-weight="700" fill="#1c3570">Operações/TI</text>
+
+      <rect x="300" y="70" width="280" height="110" rx="12" fill="#2b4b9b"/>
+      <text x="440" y="110" text-anchor="middle" font-size="15" font-weight="800" fill="#fff">CashFlow Service</text>
+      <text x="440" y="132" text-anchor="middle" font-size="10.5" fill="#dbe3f7">Lançamentos + Consolidado</text>
+      <text x="440" y="150" text-anchor="middle" font-size="10.5" fill="#dbe3f7">Multi-tenant, isolado por comerciante</text>
+
+      <rect x="730" y="20" width="140" height="55" rx="10" fill="#fff" stroke="#c7cedd" stroke-width="1.5"/>
+      <text x="800" y="43" text-anchor="middle" font-size="11" font-weight="700" fill="#16213e">Provedor de</text>
+      <text x="800" y="58" text-anchor="middle" font-size="11" font-weight="700" fill="#16213e">Identidade</text>
+
+      <rect x="730" y="95" width="140" height="55" rx="10" fill="#fff" stroke="#c7cedd" stroke-width="1.5"/>
+      <text x="800" y="118" text-anchor="middle" font-size="10.5" font-weight="700" fill="#16213e">Sistemas de</text>
+      <text x="800" y="132" text-anchor="middle" font-size="10.5" font-weight="700" fill="#16213e">Parceiros/ERPs</text>
+
+      <rect x="730" y="170" width="140" height="70" rx="10" fill="#fff" stroke="#c7cedd" stroke-width="1.5"/>
+      <text x="800" y="195" text-anchor="middle" font-size="10" font-weight="700" fill="#16213e">Observabilidade</text>
+      <text x="800" y="210" text-anchor="middle" font-size="9" fill="#5c6a8a">Prometheus/Grafana</text>
+      <text x="800" y="224" text-anchor="middle" font-size="9" fill="#5c6a8a">Alertmanager</text>
+
+      <line x1="150" y1="120" x2="300" y2="120" stroke="#5c6a8a" stroke-width="1.5" marker-end="url(#arrow)"/>
+      <line x1="150" y1="45" x2="800" y2="170" stroke="#5c6a8a" stroke-width="1" stroke-dasharray="3,3" marker-end="url(#arrow)"/>
+      <line x1="580" y1="95" x2="730" y2="47" stroke="#5c6a8a" stroke-width="1.5" marker-end="url(#arrow)"/>
+      <line x1="580" y1="125" x2="730" y2="122" stroke="#5c6a8a" stroke-width="1.5" marker-end="url(#arrow)"/>
+      <line x1="580" y1="150" x2="730" y2="205" stroke="#5c6a8a" stroke-width="1.5" marker-end="url(#arrow)"/>
+      <defs>
+        <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+          <path d="M0,0 L8,4 L0,8 Z" fill="#5c6a8a"/>
+        </marker>
+      </defs>
+      <text x="225" y="112" text-anchor="middle" font-size="9" fill="#5c6a8a">HTTPS/JSON</text>
+      <text x="655" y="68" text-anchor="middle" font-size="9" fill="#5c6a8a">OAuth2/JWT</text>
+      <text x="655" y="148" text-anchor="middle" font-size="9" fill="#5c6a8a">Métricas</text>
+    </svg>
+  </div>
+
+  <h3>Diagrama de containers</h3>
+  <div class="diagrama-svg-wrap">
+    <svg width="880" height="380" viewBox="0 0 880 380" xmlns="http://www.w3.org/2000/svg" font-family="Inter, sans-serif">
+      <rect x="10" y="10" width="860" height="360" rx="14" fill="#f3f5fa" stroke="#c7cedd" stroke-dasharray="4,3"/>
+      <text x="30" y="32" font-size="11" font-weight="700" fill="#5c6a8a">CashFlow Service</text>
+
+      <rect x="40" y="55" width="160" height="60" rx="10" fill="#2b4b9b"/>
+      <text x="120" y="80" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">API Gateway</text>
+      <text x="120" y="96" text-anchor="middle" font-size="8.5" fill="#dbe3f7">JWT, allowlist, rate limit</text>
+
+      <rect x="40" y="150" width="160" height="70" rx="10" fill="#fff" stroke="#2b4b9b" stroke-width="1.5"/>
+      <text x="120" y="175" text-anchor="middle" font-size="11" font-weight="700" fill="#1c3570">Lancamentos.Api</text>
+      <text x="120" y="192" text-anchor="middle" font-size="8.5" fill="#5c6a8a">Escrita + circuit breaker</text>
+      <text x="120" y="206" text-anchor="middle" font-size="8.5" fill="#5c6a8a">+ Outbox Publisher</text>
+
+      <rect x="40" y="250" width="160" height="50" rx="8" fill="#fff" stroke="#8b96ad" stroke-width="1.2"/>
+      <text x="120" y="272" text-anchor="middle" font-size="9.5" font-weight="700" fill="#16213e">Lancamentos DB</text>
+      <text x="120" y="286" text-anchor="middle" font-size="8" fill="#5c6a8a">SQL Server + RLS</text>
+
+      <rect x="350" y="150" width="30" height="130" rx="15" fill="#1facdd"/>
+      <text x="365" y="100" text-anchor="middle" font-size="10" font-weight="700" fill="#1587b0" transform="rotate(0)">RabbitMQ</text>
+
+      <rect x="460" y="150" width="160" height="70" rx="10" fill="#fff" stroke="#2b4b9b" stroke-width="1.5"/>
+      <text x="540" y="175" text-anchor="middle" font-size="11" font-weight="700" fill="#1c3570">Consolidado.Worker</text>
+      <text x="540" y="192" text-anchor="middle" font-size="8.5" fill="#5c6a8a">Consome e atualiza</text>
+      <text x="540" y="206" text-anchor="middle" font-size="8.5" fill="#5c6a8a">a projeção</text>
+
+      <rect x="650" y="150" width="160" height="70" rx="10" fill="#fff" stroke="#2b4b9b" stroke-width="1.5"/>
+      <text x="730" y="175" text-anchor="middle" font-size="11" font-weight="700" fill="#1c3570">Consolidado.Api</text>
+      <text x="730" y="192" text-anchor="middle" font-size="8.5" fill="#5c6a8a">Leitura (CQRS)</text>
+      <text x="730" y="206" text-anchor="middle" font-size="8.5" fill="#5c6a8a">Rate limit elástico</text>
+
+      <rect x="555" y="250" width="160" height="50" rx="8" fill="#fff" stroke="#8b96ad" stroke-width="1.2"/>
+      <text x="635" y="272" text-anchor="middle" font-size="9.5" font-weight="700" fill="#16213e">Consolidado DB</text>
+      <text x="635" y="286" text-anchor="middle" font-size="8" fill="#5c6a8a">Projeção SaldoDiario</text>
+
+      <rect x="250" y="320" width="340" height="45" rx="8" fill="#fff" stroke="#1facdd" stroke-width="1.5"/>
+      <text x="420" y="347" text-anchor="middle" font-size="10" font-weight="700" fill="#1587b0">Agente de Contingência Local (origem do comerciante)</text>
+
+      <line x1="120" y1="115" x2="120" y2="150" stroke="#5c6a8a" stroke-width="1.3" marker-end="url(#arrow2)"/>
+      <line x1="200" y1="190" x2="350" y2="190" stroke="#5c6a8a" stroke-width="1.3" marker-end="url(#arrow2)"/>
+      <line x1="380" y1="190" x2="460" y2="190" stroke="#5c6a8a" stroke-width="1.3" marker-end="url(#arrow2)"/>
+      <line x1="620" y1="190" x2="650" y2="190" stroke="#5c6a8a" stroke-width="1.3" marker-end="url(#arrow2)"/>
+      <line x1="120" y1="220" x2="120" y2="250" stroke="#5c6a8a" stroke-width="1.3" marker-end="url(#arrow2)"/>
+      <line x1="540" y1="220" x2="635" y2="250" stroke="#5c6a8a" stroke-width="1.3" marker-end="url(#arrow2)"/>
+      <line x1="730" y1="220" x2="665" y2="250" stroke="#5c6a8a" stroke-width="1.3" marker-end="url(#arrow2)"/>
+      <line x1="420" y1="320" x2="120" y2="220" stroke="#1facdd" stroke-width="1.3" stroke-dasharray="3,3" marker-end="url(#arrow3)"/>
+      <defs>
+        <marker id="arrow2" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#5c6a8a"/></marker>
+        <marker id="arrow3" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#1facdd"/></marker>
+      </defs>
+    </svg>
+  </div>
+  <p style="font-size:.85rem; color:var(--cor-texto-secundario)"><code>Lancamentos.Api</code> e <code>Consolidado.Api</code>/<code>Worker</code> não possuem dependência síncrona direta entre si — toda comunicação de negócio passa pelo RabbitMQ.</p>
+
+  <h3>Fluxo de dados: do lançamento ao saldo consolidado</h3>
+  <div class="jornada-etapa">
+    <div class="jornada-numero">1</div>
+    <div class="jornada-texto"><strong>Comerciante envia <code>POST /api/lancamentos</code></strong><span>Autenticado via JWT com claim de tenant</span></div>
+  </div>
+  <div class="jornada-etapa">
+    <div class="jornada-numero">2</div>
+    <div class="jornada-texto"><strong>Lançamentos API grava lançamento + evento Outbox</strong><span>Na mesma transação local — garante publicação confiável mesmo sob falha do broker</span></div>
+  </div>
+  <div class="jornada-etapa">
+    <div class="jornada-numero">3</div>
+    <div class="jornada-texto"><strong>Outbox Publisher publica na fila RabbitMQ</strong><span>Processo assíncrono, desacoplado do caminho de escrita</span></div>
+  </div>
+  <div class="jornada-etapa">
+    <div class="jornada-numero">4</div>
+    <div class="jornada-texto"><strong>Consolidado.Worker consome e atualiza a projeção</strong><span>De forma idempotente, por <code>ComercianteId</code> + data</span></div>
+  </div>
+  <div class="jornada-etapa">
+    <div class="jornada-numero">5</div>
+    <div class="jornada-texto"><strong>Saldo disponível em <code>GET /api/consolidado/saldo-diario</code></strong><span>Leitura direta da projeção, sem recálculo em tempo de requisição</span></div>
+  </div>
+
+  <h3>Resiliência em três camadas</h3>
+  <table>
+    <tr><th>Camada</th><th>Mecanismo</th><th>Cobre</th></tr>
+    <tr><td>1</td><td>Réplica em zona de disponibilidade separada (SQL Server Always On)</td><td>Falha pontual de infraestrutura</td></tr>
+    <tr><td>2</td><td>Circuit breaker com ativação automática de modo contingência, auditável</td><td>Falha sustentada do banco primário</td></tr>
+    <tr><td>3</td><td>Persistência local na origem, reconciliação idempotente</td><td>Falha total simultânea (primário + espelho)</td></tr>
+  </table>
+</section>
+
+<!-- ===================== ADRs ===================== -->
+<section class="pagina" id="adrs">
+  <span class="rotulo-secao">3. Arquitetura de Soluções</span>
+  <h2>Decisões Arquiteturais (ADRs)</h2>
+  <p class="subtitulo">Cada decisão material registrada no formato Contexto → Decisão → Alternativas Consideradas → Consequências. Alternativas descartadas são mantidas visíveis, com a razão da rejeição.</p>
+
+  <div class="adr-card">
+    <span class="adr-tag">ADR-001</span>
+    <h4>Microsserviços desacoplados em vez de monolito modular</h4>
+    <p><strong>Contexto:</strong> o sistema precisa atender dois requisitos com características operacionais opostas (escrita transacional de baixo volume e leitura de alto volume agregado), além de um requisito não funcional explícito: disponibilidade de escrita independente de falhas no serviço de leitura.</p>
+    <p><strong>Decisão:</strong> dois microsserviços — Lançamentos e Consolidado — cada um com processo, banco e ciclo de deploy próprios, comunicando-se de forma assíncrona.</p>
+    <div class="adr-secao-label">Alternativas consideradas</div>
+    <div class="adr-alt"><strong>Monolito modular.</strong> Menor complexidade operacional e custo, mas não atende ao requisito de disponibilidade isolada: um pico de carga no módulo de Consolidado consumiria recursos (threads, conexões) que também afetariam Lançamentos.</div>
+    <div class="adr-alt"><strong>Monolito modular com mensageria interna.</strong> Ainda compartilha o mesmo processo de aplicação — uma falha fatal (crash, OOM) derruba os dois lados simultaneamente, violando o requisito em seu sentido mais literal.</div>
+    <div class="adr-secao-label">Consequências</div>
+    <p style="font-size:.88rem"><strong>Positivas:</strong> disponibilidade de Lançamentos genuinamente desacoplada; escalabilidade independente. <strong>Negativas (aceitas):</strong> maior complexidade operacional; consistência eventual entre os serviços; overhead de infraestrutura (banco duplicado, broker de mensagens).</p>
+  </div>
+
+  <div class="adr-card">
+    <span class="adr-tag">ADR-002</span>
+    <h4>Mensageria assíncrona (RabbitMQ) em vez de chamada síncrona</h4>
+    <p><strong>Contexto:</strong> com os serviços separados, é necessário definir como o Consolidado toma conhecimento dos lançamentos sem violar a disponibilidade isolada de Lançamentos.</p>
+    <p><strong>Decisão:</strong> Lançamentos publica um evento (<code>LancamentoRegistrado</code>) em fila RabbitMQ; Consolidado consome de forma assíncrona. Nenhuma chamada síncrona bloqueante entre os dois.</p>
+    <div class="adr-secao-label">Alternativas consideradas</div>
+    <div class="adr-alt"><strong>Chamada HTTP síncrona.</strong> Mais simples, mas cria acoplamento temporal — qualquer lentidão do Consolidado degradaria Lançamentos, mesmo com timeout agressivo.</div>
+    <div class="adr-alt"><strong>Kafka como broker.</strong> Mais robusto para alto throughput sustentado e replay de eventos, mas desproporcional à carga real (50 req/s não é streaming de alto volume) e com complexidade operacional significativamente maior. Registrado como evolução futura se o volume crescer ordens de grandeza.</div>
+    <div class="adr-alt"><strong>Outbox com polling, sem broker dedicado.</strong> Parcialmente incorporada — o Outbox Pattern (ADR-005) é usado em conjunto com RabbitMQ, não como substituto.</div>
+    <div class="adr-secao-label">Consequências</div>
+    <p style="font-size:.88rem"><strong>Positivas:</strong> Lançamentos nunca espera resposta do Consolidado; a fila absorve picos naturalmente. <strong>Negativas (aceitas):</strong> consistência eventual — saldo pode levar um curto intervalo para refletir o lançamento mais recente, aceitável para um relatório diário.</p>
+  </div>
+
+  <div class="adr-card">
+    <span class="adr-tag">ADR-003</span>
+    <h4>SQL Server como banco de dados de ambos os serviços</h4>
+    <p><strong>Contexto:</strong> cada microsserviço precisa de banco próprio (Database per Service). É necessário escolher o motor relacional considerando criticidade transacional ACID, aderência à stack .NET, cultura bancária, e custo total de propriedade.</p>
+    <p><strong>Decisão:</strong> SQL Server para ambos os serviços, cada um com base de dados fisicamente separada.</p>
+    <div class="adr-secao-label">Alternativas consideradas</div>
+    <div class="adr-alt"><strong>Oracle Database.</strong> Padrão histórico em bancos de grande porte, recursos maduros de HA (RAC). Descartado pelo custo de licenciamento desproporcional à carga real (50 req/s não justifica o custo Oracle Enterprise), salvo contrato corporativo pré-existente não confirmado neste estágio.</div>
+    <div class="adr-alt"><strong>PostgreSQL.</strong> Sem custo de licenciamento, ACID completo, replicação nativa, crescente adoção em fintechs. <strong>A alternativa tecnicamente mais forte sob custo total de propriedade.</strong> A escolha por SQL Server foi motivada por critério organizacional (aderência à stack .NET e expectativa de ferramental corporativo Microsoft já presente), não por superioridade técnica.</div>
+    <div class="caixa-alerta" style="margin:10px 0 0">
+      <strong>Esta é a decisão mais frágil do desenho.</strong> Se não houver licenciamento Microsoft corporativo pré-existente, o argumento de custo marginal zero cai, e PostgreSQL passa a ser a opção tecnicamente mais sustentável por TCO (ver Custos e TCO). Gatilho de revisão: confirmação do regime de licenciamento corporativo do banco.
+    </div>
+  </div>
+
+  <div class="adr-card">
+    <span class="adr-tag">ADR-004</span>
+    <h4>CQRS com read model materializado</h4>
+    <p><strong>Contexto:</strong> Consolidado precisa responder consultas com alta vazão (50 req/s, até 5% de perda) e baixa latência, consumindo eventos de forma assíncrona.</p>
+    <p><strong>Decisão:</strong> projeção materializada (tabela <code>SaldoDiario</code> por comerciante e data), atualizada incrementalmente a cada evento consumido. Consulta é leitura direta, sem agregação em tempo de requisição.</p>
+    <div class="adr-secao-label">Alternativa considerada</div>
+    <div class="adr-alt"><strong>Cálculo sob demanda.</strong> Mais simples — sem segundo modelo de dados a sincronizar — mas não escala sem cache adicional, e reintroduziria acoplamento de leitura entre os dois serviços, contrariando o isolamento buscado pelos ADR-001/002.</div>
+    <div class="adr-secao-label">Consequências</div>
+    <p style="font-size:.88rem"><strong>Positivas:</strong> leitura O(1) em relação ao volume de lançamentos do dia; isolamento total mantido. <strong>Negativas (aceitas):</strong> consistência eventual; exige idempotência no consumo de eventos.</p>
+  </div>
+
+  <div class="adr-card">
+    <span class="adr-tag">ADR-005</span>
+    <h4>Outbox Pattern para publicação confiável de eventos</h4>
+    <p><strong>Contexto:</strong> persistir o lançamento no banco e publicar o evento na fila são duas escritas em sistemas diferentes, sem transação distribuída nativa entre eles.</p>
+    <p><strong>Decisão:</strong> gravar o lançamento e um registro de outbox na mesma transação local; um publisher separado lê a tabela periodicamente e publica na fila.</p>
+    <div class="adr-secao-label">Alternativas consideradas</div>
+    <div class="adr-alt"><strong>Dual write ingênuo (publicar logo após o commit).</strong> Não atômico — uma falha entre o commit e a publicação causa perda silenciosa do evento.</div>
+    <div class="adr-alt"><strong>Publish-then-persist.</strong> Se a publicação tiver sucesso mas a gravação falhar, o Consolidado processa um evento de um lançamento que nunca existiu — pior que o anterior.</div>
+    <div class="adr-alt"><strong>Two-Phase Commit.</strong> Resolveria a atomicidade, mas é abordagem obsoleta para este cenário — RabbitMQ não oferece 2PC nativo e confiável, e introduz acoplamento síncrono forte.</div>
+    <div class="adr-secao-label">Consequências</div>
+    <p style="font-size:.88rem"><strong>Positivas:</strong> garantia at-least-once mesmo com broker temporariamente indisponível. <strong>Negativas (aceitas):</strong> possibilidade de entrega duplicada (exige consumidor idempotente); pequeno atraso do intervalo de polling.</p>
+  </div>
+
+  <div class="adr-card">
+    <span class="adr-tag">ADR-006</span>
+    <h4>Multi-tenancy com banco compartilhado e Row-Level Security</h4>
+    <p><strong>Contexto:</strong> cada comerciante precisa ter seus dados isolados dos demais, sem risco de vazamento entre tenants.</p>
+    <p><strong>Decisão:</strong> banco compartilhado com coluna <code>ComercianteId</code> em todas as tabelas, reforçado por filtro obrigatório na aplicação e Row-Level Security nativo do SQL Server como defesa em profundidade.</p>
+    <div class="adr-secao-label">Alternativa considerada</div>
+    <div class="adr-alt"><strong>Banco ou schema dedicado por tenant.</strong> Isolamento físico mais forte, padrão para tenants enterprise com requisitos regulatórios de isolamento individual. Descartado pelo custo operacional que cresce linearmente com o número de comerciantes (backup, monitoramento, migrations × N tenants) — inviável para uma carteira potencialmente grande de lojistas pequenos/médios.</div>
+    <div class="adr-secao-label">Consequências</div>
+    <p style="font-size:.88rem"><strong>Positivas:</strong> custo operacional não cresce por comerciante; RLS mitiga risco de IDOR mesmo com falha de implementação. <strong>Negativas (aceitas):</strong> um tenant de volume excepcional compartilha infraestrutura física com os demais — mitigado pela quota elástica (ADR-009); evolução para banco dedicado documentada como caminho possível.</p>
+  </div>
+
+  <div class="adr-card">
+    <span class="adr-tag">ADR-007</span>
+    <h4>Resiliência em três camadas progressivas</h4>
+    <p><strong>Contexto:</strong> além do isolamento estrutural entre serviços, a própria disponibilidade de Lançamentos precisa de estratégia de resiliência contra falhas de infraestrutura mais amplas.</p>
+    <p><strong>Decisão:</strong> réplica em zona separada → circuit breaker com ativação automática de contingência → persistência local na origem, cada camada cobrindo o cenário em que a anterior falha.</p>
+    <div class="adr-secao-label">Alternativas consideradas</div>
+    <div class="adr-alt"><strong>Apenas réplica, sem camadas adicionais.</strong> Cobre a maioria dos cenários de infraestrutura, mas não cobre falha de aplicação nem decisão automática de contingência — exigiria intervenção manual, incompatível com a criticidade declarada.</div>
+    <div class="adr-alt"><strong>Réplica + fila local ilimitada no backend, sem persistência na origem.</strong> Não cobre indisponibilidade do lado do cliente, e acumular lançamentos rejeitados sem captura na origem significa perda de dados na prática.</div>
+    <div class="adr-secao-label">Consequências</div>
+    <p style="font-size:.88rem"><strong>Positivas:</strong> nenhum lançamento perdido mesmo em falha total; resposta automática reduz indisponibilidade percebida a segundos. <strong>Negativas (aceitas):</strong> complexidade de implementação e teste significativamente maior; Camada 3 implementada como prova de conceito, não SDK de produção.</p>
+  </div>
+
+  <div class="adr-card">
+    <span class="adr-tag">ADR-008</span>
+    <h4>Ativação automática de modo contingência, com auditoria</h4>
+    <p><strong>Contexto:</strong> a Camada 2 prevê alternância automática para o ambiente espelho. É necessário decidir entre automação total ou confirmação humana, dado o contexto bancário de auditoria e compliance.</p>
+    <p><strong>Decisão:</strong> ativação automática via circuit breaker, com toda transição registrada em log de auditoria imutável e alerta disparado em paralelo — sem exigir aprovação humana para a transição ocorrer.</p>
+    <div class="adr-secao-label">Alternativa considerada</div>
+    <div class="adr-alt"><strong>Alerta dispara, ativação exige confirmação humana.</strong> Mais conservador, mas confunde dois tipos de decisão: a decisão operacional de "para onde gravar agora" (análoga à de um circuit breaker clássico, automatizada há décadas) versus a reconciliação financeira pós-incidente (essa sim exige julgamento humano, e não é automatizada por esta decisão). Exigir confirmação para a primeira introduziria indisponibilidade na escala de tempo humana, contrariando a motivação da Camada 2.</div>
+    <div class="adr-secao-label">Consequências</div>
+    <p style="font-size:.88rem"><strong>Positivas:</strong> indisponibilidade efetiva reduzida à janela de detecção (segundos); trilha de auditoria garante rastreabilidade. <strong>Negativas (aceitas):</strong> risco de "flapping" em instabilidade intermitente, mitigado por estado semiaberto e limiar de tentativas.</p>
+  </div>
+
+  <div class="adr-card">
+    <span class="adr-tag">ADR-009</span>
+    <h4>Quota elástica por tenant em vez de quota fixa</h4>
+    <p><strong>Contexto:</strong> é necessário impedir que um tenant degrade o serviço para os demais, sem desperdiçar capacidade com limites fixos e estáticos.</p>
+    <p><strong>Decisão:</strong> cada comerciante tem piso mínimo garantido de requisições/segundo, podendo consumir além disso de um pool compartilhado ocioso até um teto individual — que se reduz progressivamente conforme o sistema se aproxima da saturação.</p>
+    <div class="adr-secao-label">Alternativas consideradas</div>
+    <div class="adr-alt"><strong>Quota fixa e igual por tenant.</strong> Mais simples, mas bloqueia artificialmente comerciantes de maior porte mesmo havendo capacidade ociosa no sistema, e subutiliza a capacidade total na maior parte do tempo.</div>
+    <div class="adr-alt"><strong>Limite global sem segmentação por tenant.</strong> Não oferece proteção de isolamento — um único comerciante com comportamento anômalo poderia consumir todo o orçamento global.</div>
+    <div class="adr-secao-label">Consequências</div>
+    <p style="font-size:.88rem"><strong>Positivas:</strong> nenhum comerciante fica sem capacidade mínima mesmo sob abuso de outro; capacidade ociosa aproveitada por quem está em pico legítimo. <strong>Negativas (aceitas):</strong> maior complexidade de implementação que rate limiter simples; comportamento sob pico agregado extremo ainda limitado pela capacidade física.</p>
+  </div>
+
+  <div class="adr-card">
+    <span class="adr-tag">ADR-010</span>
+    <h4>Controle de origem via credenciais por canal e allowlist</h4>
+    <p><strong>Contexto:</strong> autenticação JWT garante "quem" faz a requisição, mas não "de onde" — é necessário uma camada adicional que rejeite, na borda, origens não reconhecidas.</p>
+    <p><strong>Decisão:</strong> cada canal de integração recebe credenciais próprias (OAuth2 Client Credentials); o Gateway mantém allowlist de origens/IPs conhecidas, rejeitando na borda requisições de origens não cadastradas.</p>
+    <div class="adr-secao-label">Alternativa considerada</div>
+    <div class="adr-alt"><strong>Exposição aberta, autenticação apenas via JWT.</strong> Um token legítimo vazado ou obtido indevidamente poderia ser usado de qualquer origem, sem barreira adicional de canal. Descartada por não permitir revogar um canal específico sem impactar os demais.</div>
+    <div class="adr-secao-label">Consequências</div>
+    <p style="font-size:.88rem"><strong>Positivas:</strong> redução da superfície de ataque; capacidade de revogar um canal inteiro independentemente. <strong>Negativas (aceitas):</strong> allowlist de IP é frágil com IPs dinâmicos/CDNs — tratada como complementar a mTLS e WAF em produção.</p>
+  </div>
+
+  <div class="adr-card">
+    <span class="adr-tag">ADR-011</span>
+    <h4>Status page pública de autoatendimento</h4>
+    <p><strong>Contexto:</strong> instabilidades percebidas pelo comerciante podem ter origem na plataforma ou no próprio ambiente dele — sem diferenciação, qualquer caso gera chamado de suporte.</p>
+    <p><strong>Decisão:</strong> endpoint <code>/health</code> em cada serviço refletindo estado real agregado, consumido por uma página pública que mostra status consolidado sem exigir autenticação para a visão básica.</p>
+    <div class="adr-secao-label">Alternativa considerada</div>
+    <div class="adr-alt"><strong>Painel interno apenas para o time de TI/suporte.</strong> Reaproveita a stack de observabilidade sem componente adicional público, mas não resolve o problema na origem — o comerciante ainda depende de atendimento humano para descobrir se o problema é da plataforma.</div>
+    <div class="adr-secao-label">Consequências</div>
+    <p style="font-size:.88rem"><strong>Positivas:</strong> redução esperada de chamados de primeira linha; comunicação transparente de incidentes. <strong>Negativas (aceitas):</strong> expor estado de saúde publicamente pode, em tese, fornecer reconhecimento a um agente malicioso — mitigado por expor apenas estado agregado de alto nível, sem detalhes de infraestrutura.</p>
+  </div>
+</section>
+
+<!-- ===================== EQUIPE E INVESTIMENTO ===================== -->
+<section class="pagina" id="equipe-investimento">
+  <span class="rotulo-secao">3. Engenharia Financeira</span>
+  <h2>Equipe, Capacidade e Investimento Inicial</h2>
+
+  <h3>Premissas e bases</h3>
+  <table>
+    <tr><th>ID</th><th>Variável</th><th>Valor</th><th>Unidade/Período</th><th>Confiança</th></tr>
+    <tr><td>F01</td><td>Equipe dedicada</td><td>2 desenvolvedores seniores</td><td>pessoas</td><td>Hipótese de dimensionamento</td></tr>
+    <tr><td>F02</td><td>Dedicação ao projeto</td><td>80%</td><td>fração do tempo</td><td>Hipótese</td></tr>
+    <tr><td>F03</td><td>Duração planejada</td><td>6 semanas (3 Sprints)</td><td>semanas</td><td>Ver Backlog e Sprints</td></tr>
+    <tr><td>F04</td><td>Taxa horária carregada</td><td>US$ 150/hora</td><td>USD/hora</td><td>Estimativa de mercado para dev sênior .NET em regime de squad dedicada — não cotação formal</td></tr>
+  </table>
+
+  <h3>Cálculo de esforço e investimento</h3>
+  <div class="caixa-info">
+    Capacidade = 40h/semana × 80% dedicação × 6 semanas × 2 desenvolvedores = <strong>384 horas-pessoa</strong><br>
+    Custo de equipe = 384h × US$ 150/h = <strong>US$ 57.600</strong><br>
+    Contingência explícita (15%) = <strong>US$ 8.640</strong><br>
+    <strong>Investimento inicial total = US$ 66.240</strong>
+  </div>
+  <p style="font-size:.85rem; color:var(--cor-texto-secundario)">Este valor cobre apenas o esforço de desenvolvimento dos 3 Sprints planejados (ver Backlog e Sprints) — não inclui o Sprint 0 de infraestrutura de CI/CD identificado como lacuna no McKinsey 7S (Systems), que deve ser orçado separadamente antes de qualquer deploy real.</p>
+
+  <h3>Capacidade por Sprint</h3>
+  <table>
+    <tr><th>Sprint</th><th>Capacidade (horas-pessoa)</th><th>Foco</th></tr>
+    <tr><td>Sprint 1</td><td>128h</td><td>Fatia vertical mínima (US-01, 02, 03)</td></tr>
+    <tr><td>Sprint 2</td><td>128h</td><td>Resiliência central (US-04, 05)</td></tr>
+    <tr><td>Sprint 3</td><td>128h</td><td>Contingência avançada e observabilidade (US-06, 08, 09)</td></tr>
+  </table>
+</section>
+
+<!-- ===================== CUSTOS E TCO ===================== -->
+<section class="pagina" id="custos-tco">
+  <span class="rotulo-secao">3. Engenharia Financeira</span>
+  <h2>Custos de Operação e TCO</h2>
+
+  <h3>Premissas de dimensionamento</h3>
+  <p>Estimativa de infraestrutura em nuvem (Microsoft Azure, por aderência à stack adotada — ADR-003), para uma carteira de porte inicial/médio (algumas centenas de comerciantes ativos, carga compatível com 50 req/s de pico). Dois serviços com 4 instâncias mínimas cada (2 zonas × 2 réplicas), SQL Server em Always On (2 réplicas), RabbitMQ gerenciado ou em container dedicado.</p>
+
+  <h3>Cenários mensais de operação (USD)</h3>
+  <div class="grafico-barras">
+    <div class="barra-grupo">
+      <div class="barra" style="height:100%; background:var(--cor-erro)">$2.900</div>
+      <div class="barra-rotulo">Conservador</div>
+    </div>
+    <div class="barra-grupo">
+      <div class="barra" style="height:70%; background:var(--cor-primaria)">$2.040</div>
+      <div class="barra-rotulo">Base</div>
+    </div>
+    <div class="barra-grupo">
+      <div class="barra" style="height:41%; background:var(--cor-sucesso)">$1.180</div>
+      <div class="barra-rotulo">Otimista</div>
+    </div>
+  </div>
+  <div class="legenda-grafico">Custo mensal de infraestrutura por cenário (USD/mês)</div>
+
+  <table class="tabela-larga" style="margin-top:20px">
+    <tr><th>Item</th><th>Conservador</th><th>Base</th><th>Otimista</th><th>Observação</th></tr>
+    <tr><td>Compute (8 instâncias)</td><td>$800</td><td>$600</td><td>$400</td><td>AKS dedicado (conservador) vs. App Service compartilhado (otimista)</td></tr>
+    <tr><td>SQL Server (Always On)</td><td>$1.500</td><td>$1.050</td><td>$600</td><td>Maior variável — Enterprise sem EA corporativo (conservador) vs. com EA (otimista)</td></tr>
+    <tr><td>RabbitMQ</td><td>$150</td><td>$100</td><td>$50</td><td>Self-hosted reduz custo, aumenta esforço operacional</td></tr>
+    <tr><td>Observabilidade</td><td>$200</td><td>$125</td><td>$50</td><td>Self-hosted vs. gerenciado</td></tr>
+    <tr><td>Gateway/Load Balancer</td><td>$100</td><td>$65</td><td>$30</td><td></td></tr>
+    <tr><td>Armazenamento/rede</td><td>$150</td><td>$100</td><td>$50</td><td></td></tr>
+    <tr><td><strong>Total mensal</strong></td><td><strong>$2.900</strong></td><td><strong>$2.040</strong></td><td><strong>$1.180</strong></td><td></td></tr>
+  </table>
+
+  <h3>TCO consolidado (investimento inicial + operação)</h3>
+  <table>
+    <tr><th>Cenário</th><th>Operação 12m</th><th>Operação 36m</th><th>TCO 12m (+ investimento)</th><th>TCO 36m (+ investimento)</th></tr>
+    <tr><td>Conservador</td><td>$34.800</td><td>$104.400</td><td>$101.040</td><td>$170.640</td></tr>
+    <tr><td><strong>Base</strong></td><td><strong>$24.480</strong></td><td><strong>$73.440</strong></td><td><strong>$90.720</strong></td><td><strong>$139.680</strong></td></tr>
+    <tr><td>Otimista</td><td>$14.160</td><td>$42.480</td><td>$80.400</td><td>$108.720</td></tr>
+  </table>
+  <p style="font-size:.82rem; color:var(--cor-texto-secundario)">TCO = Investimento inicial (US$ 66.240) + custo de operação acumulado no horizonte. Valores nominais, sem ajuste de inflação ou câmbio.</p>
+
+  <h3>Custo de operação por comerciante ativo</h3>
+  <div class="caixa-info">
+    Cenário base, 300 comerciantes ativos: $2.040/mês ÷ 300 = <strong>$6,80/comerciante/mês</strong>
+  </div>
+  <p style="font-size:.85rem">Este é o custo de operação (infraestrutura), não um preço de cobrança — ver Business Case para a distinção entre custo de operação e benefício econômico do produto, dado que este não é tratado como produto comercial com precificação direta ao comerciante.</p>
+
+  <h3>Trade-off de licenciamento SQL Server</h3>
+  <div class="caixa-alerta">
+    A mesma arquitetura com PostgreSQL gerenciado (sem custo de licença, com alta disponibilidade zonal nativa) reduziria o item de banco de dados para a faixa de $300–700/mês no mesmo dimensionamento — uma diferença de até ~$800/mês no cenário conservador. Essa é exatamente a tensão identificada no ADR-003: a escolha de SQL Server prioriza aderência organizacional sobre otimização pura de custo, e vale ser revisitada com dados reais de licenciamento corporativo disponível.
+  </div>
+</section>
+
+<!-- ===================== BUSINESS CASE ===================== -->
+<section class="pagina" id="business-case">
+  <span class="rotulo-secao">3. Engenharia Financeira</span>
+  <h2>Business Case</h2>
+
+  <div class="caixa-info">
+    <strong>Natureza deste projeto: investimento interno, não produto comercial com precificação direta.</strong> A plataforma é um componente da oferta do banco à sua carteira de comerciantes, não um SaaS vendido separadamente — portanto não se aplica aqui um modelo de precificação por unidade de cobrança, franquia e margem de contribuição da forma como se aplicaria a um produto comercial autônomo.
+  </div>
+
+  <h3>Avaliação de economia realizável (projeto interno)</h3>
+  <p>O valor do investimento não está em receita direta, mas em dois vetores: (1) redução do custo de atendimento de suporte relacionado a dúvidas de disponibilidade, via a status page pública (ADR-011); (2) retenção e aprofundamento de relacionamento com a carteira de comerciantes, ao oferecer uma ferramenta que elimina reconciliação manual — um benefício de produtividade ao comerciante, não uma economia de caixa direta do banco.</p>
+
+  <div class="caixa-hipotese">
+    <strong>Não quantificado nesta fase:</strong> não há dado de volume de chamados de suporte relacionados a disponibilidade, nem taxa de adoção esperada da carteira, para calcular economia realizável em valor monetário com confiança. Apresentar um número aqui seria inventar tração não observada — a decisão de avançar deve se apoiar no racional qualitativo acima e no custo conhecido (Custos e TCO), não em uma economia projetada sem base.
+  </div>
+
+  <h3>Teto de exposição financeira e condição de continuidade</h3>
+  <table>
+    <tr><th>Item</th><th>Valor</th></tr>
+    <tr><td>Exposição do investimento inicial (Sprints 1–3)</td><td>US$ 66.240 (cenário base)</td></tr>
+    <tr><td>Exposição de operação até a primeira validação de adoção (3 meses)</td><td>US$ 6.120 (cenário base, 3× $2.040)</td></tr>
+    <tr><td><strong>Exposição total até o primeiro marco de decisão</strong></td><td><strong>~US$ 72.360</strong></td></tr>
+  </table>
+  <p style="font-size:.85rem">Condição de continuidade proposta: ao final do Sprint 3, revisar adoção real (comerciantes ativos), custo de operação observado versus estimado, e taxa de ativação do modo contingência — decidir prosseguir para operação ampliada, pausar para ajuste de escopo, ou interromper, conforme os critérios da seção Recomendação.</p>
+
+  <h3>Payback</h3>
+  <p style="font-size:.85rem">Não calculável nesta fase: payback financeiro exige uma estimativa de economia ou receita monetizável, que — como declarado acima — não está disponível com confiança suficiente para este projeto interno. Se o modelo de negócio evoluir para precificação direta ao comerciante (ex: tarifa por uso da integração), o cálculo de payback deve ser refeito com as premissas de preço, adoção e custo variável então conhecidas, seguindo a mesma estrutura de cenários desta seção.</p>
+</section>
+
+<!-- ===================== BACKLOG E SPRINTS ===================== -->
+<section class="pagina" id="backlog">
+  <span class="rotulo-secao">4. Execução Ágil — Scrum</span>
+  <h2>Backlog e Sprints</h2>
+
+  <h3>Product Goal</h3>
+  <div class="caixa-info">Permitir que qualquer comerciante da carteira do banco registre seu fluxo de caixa diário e consulte o saldo consolidado de forma confiável, isolada dos demais comerciantes, e resiliente a falhas parciais da plataforma — sem exigir reconciliação manual entre o controle de caixa do comerciante e o extrato bancário.</div>
+
+  <h3>Backlog priorizado</h3>
+  <div class="tabela-larga">
+  <table>
+    <tr><th>ID</th><th>História</th><th>Prioridade</th><th>Esforço</th></tr>
+    <tr><td>US-01</td><td>Como comerciante, quero registrar um lançamento de débito ou crédito</td><td><span class="badge badge-alta">Alta</span></td><td>M</td></tr>
+    <tr><td>US-02</td><td>Como comerciante, quero que meus lançamentos sejam isolados dos de outros</td><td><span class="badge badge-alta">Alta</span></td><td>M</td></tr>
+    <tr><td>US-03</td><td>Como comerciante, quero consultar meu saldo diário consolidado</td><td><span class="badge badge-alta">Alta</span></td><td>M</td></tr>
+    <tr><td>US-04</td><td>Como plataforma, quero que a indisponibilidade do Consolidado não impeça lançamentos</td><td><span class="badge badge-alta">Alta</span></td><td>G</td></tr>
+    <tr><td>US-05</td><td>Como plataforma, quero propagar lançamentos confiavelmente mesmo com falha do broker</td><td><span class="badge badge-alta">Alta</span></td><td>G</td></tr>
+    <tr><td>US-06</td><td>Como operação, quero contingência automática auditável em falha do banco primário</td><td><span class="badge badge-media">Média</span></td><td>G</td></tr>
+    <tr><td>US-07</td><td>Como comerciante offline, quero continuar registrando lançamentos localmente</td><td><span class="badge badge-media">Média</span></td><td>G</td></tr>
+    <tr><td>US-08</td><td>Como operação, quero visibilidade de métricas de saúde e saturação</td><td><span class="badge badge-media">Média</span></td><td>M</td></tr>
+    <tr><td>US-09</td><td>Como TI do comerciante, quero consultar disponibilidade sem depender de suporte</td><td><span class="badge badge-baixa">Baixa</span></td><td>P</td></tr>
+    <tr><td>US-10</td><td>Como operação, quero que um tenant não degrade a experiência dos demais</td><td><span class="badge badge-baixa">Baixa</span></td><td>G</td></tr>
+  </table>
+  </div>
+  <p style="font-size:.8rem; color:var(--cor-texto-secundario)">Esforço: P (pequeno), M (médio), G (grande) — tamanho preliminar, não convertido em horas sem histórico de velocity real da squad. Critérios de aceite verificáveis de cada história estão na wiki técnica do projeto (referência de API e documentação operacional).</p>
+
+  <h3>Sprint 1 — Fatia vertical mínima</h3>
+  <div class="sprint-card">
+    <p><strong>Sprint Goal:</strong> um comerciante consegue registrar um lançamento e consultar seu saldo consolidado, com isolamento de dados garantido.</p>
+    <p><strong>Histórias:</strong> US-01, US-02, US-03 — 128h de capacidade</p>
+    <p><strong>Incremento verificável:</strong> ambiente completo sobe via Docker Compose; dois comerciantes com tokens distintos confirmam isolamento total de dados.</p>
+    <p><strong>Risco:</strong> modelagem de Row-Level Security é nova para a squad — mitigação via spike de 1 dia antes do sprint, se necessário.</p>
+  </div>
+
+  <h3>Sprint 2 — Resiliência central</h3>
+  <div class="sprint-card">
+    <p><strong>Sprint Goal:</strong> o requisito não funcional central está satisfeito — o Consolidado pode cair sem impedir novos lançamentos.</p>
+    <p><strong>Histórias:</strong> US-04, US-05, parte de US-08 — 128h de capacidade</p>
+    <p><strong>Incremento verificável:</strong> Consolidado derrubado deliberadamente; Lançamentos continua aceitando requisições; fila drena sem perda ao religar.</p>
+    <p><strong>Risco:</strong> Outbox Pattern exige disciplina de transação — mitigação via teste automatizado cobrindo esse caso.</p>
+  </div>
+
+  <h3>Sprint 3 — Contingência avançada e observabilidade</h3>
+  <div class="sprint-card">
+    <p><strong>Sprint Goal:</strong> circuit breaker automático operando, com visibilidade operacional suficiente para agir antes de um incidente crítico.</p>
+    <p><strong>Histórias:</strong> US-06, US-08 (completo), US-09 — 128h de capacidade</p>
+    <p><strong>Incremento verificável:</strong> falha do banco primário ativa modo contingência automaticamente, com auditoria e alerta; card de saturação funcional; status page pública refletindo estado real.</p>
+    <p><strong>Risco:</strong> calibração dos limiares do circuit breaker sem dados reais — gatilho de revisão após observar comportamento real em produção.</p>
+  </div>
+
+  <div class="caixa-info">US-07 (persistência local) e US-10 (quota elástica) ficam para sprints seguintes, fora do horizonte de três sprints planejado — não cabiam sem comprometer a qualidade dos itens priorizados acima.</div>
+</section>
+
+<!-- ===================== DOD ===================== -->
+<section class="pagina" id="dod">
+  <span class="rotulo-secao">4. Execução Ágil</span>
+  <h2>Definition of Done e Governança</h2>
+
+  <h3>Definition of Done (comum ao incremento)</h3>
+  <ul style="font-size:.9rem">
+    <li>Código integrado à branch principal, build e testes automatizados passando</li>
+    <li>Revisão de código por outro desenvolvedor da squad (ou autorrevisão documentada, em squad de uma pessoa)</li>
+    <li>Testes proporcionais ao risco: unitários para regras de domínio, integração para fluxos entre serviços</li>
+    <li>Segurança: nenhum endpoint aceita <code>ComercianteId</code> do cliente sem cruzar com o claim do token</li>
+    <li>RNFs aplicáveis verificados, quando mensuráveis</li>
+    <li>Observabilidade: toda escrita de negócio relevante emite métrica/log estruturado</li>
+    <li>ADR criado ou revisado, se a história envolveu decisão arquitetural</li>
+    <li>Evidência de funcionamento registrada</li>
+  </ul>
+
+  <h3>Accountabilities</h3>
+  <table>
+    <tr><th>Papel</th><th>Responsabilidade</th></tr>
+    <tr><td>Product Owner</td><td>Prioriza o backlog por valor para a carteira de comerciantes; não decide detalhes técnicos</td></tr>
+    <tr><td>Scrum Master</td><td>Facilita eventos e remove impedimentos; não aloca tarefas individuais</td></tr>
+    <tr><td>Developers</td><td>Decidem como implementar, incluindo arquitetura (registrada em ADR); responsáveis coletivamente pela DoD</td></tr>
+    <tr><td>Especialidades transversais (segurança, SRE)</td><td>Revisores e consultores em qualquer sprint, não papéis fixos do Scrum Team</td></tr>
+  </table>
+</section>
+
+<!-- ===================== RASTREABILIDADE ===================== -->
+<section class="pagina" id="rastreabilidade">
+  <span class="rotulo-secao">Fechamento Orientado à Decisão</span>
+  <h2>Matriz de Rastreabilidade</h2>
+  <p class="subtitulo">Dor → Resultado → Item do MVP → RNF/Componente → Direcionador de Custo → História → Validação</p>
+
+  <div class="tabela-larga">
+  <table>
+    <tr><th>Dor</th><th>Resultado</th><th>Item MVP</th><th>RNF/Componente</th><th>Custo</th><th>História</th><th>Validação</th></tr>
+    <tr><td>Reconciliação manual entre caixa e banco</td><td>Saldo consolidado automático e confiável</td><td>Registro + consolidado</td><td>Latência p95 &lt; 200ms leitura</td><td>Compute + SQL Server (Consolidado)</td><td>US-01, US-03</td><td>Teste manual de ponta a ponta</td></tr>
+    <tr><td>Indisponibilidade por falha em cascata</td><td>Lançamentos sempre disponível</td><td>Isolamento de serviços</td><td>50 req/s, 5% perda máxima</td><td>Compute + RabbitMQ</td><td>US-04, US-05</td><td>Teste de carga com Consolidado parado</td></tr>
+    <tr><td>Vazamento de dados entre comerciantes</td><td>Isolamento multi-tenant garantido</td><td>RLS + JWT</td><td>Isolamento em duas camadas independentes</td><td>Incremental (sem item de custo dedicado)</td><td>US-02</td><td>Teste cruzado entre dois tenants</td></tr>
+    <tr><td>Falha total do backend</td><td>Nenhum lançamento perdido</td><td>Persistência local (PoC)</td><td>Idempotência por IdOrigem</td><td>Esforço de engenharia (US-07)</td><td>US-07</td><td>Simulação de indisponibilidade total</td></tr>
+    <tr><td>Chamados de suporte por instabilidade não identificada</td><td>Autoatendimento de disponibilidade</td><td>Status page pública</td><td>Health check real agregado</td><td>Observabilidade</td><td>US-09</td><td>Consulta sem autenticação, estado real refletido</td></tr>
+    <tr><td>Abuso/sobrecarga por um único tenant</td><td>Previsibilidade de serviço para toda a carteira</td><td>Quota elástica</td><td>Piso garantido + teto por tenant</td><td>Incremental</td><td>US-10</td><td>Teste de pico simultâneo entre tenants</td></tr>
+  </table>
+  </div>
+</section>
+
+<!-- ===================== RISCOS ===================== -->
+<section class="pagina" id="riscos">
+  <span class="rotulo-secao">Fechamento Orientado à Decisão</span>
+  <h2>Riscos</h2>
+
+  <table>
+    <tr><th>Risco</th><th>Probabilidade</th><th>Impacto</th><th>Mitigação</th><th>Gatilho de revisão</th></tr>
+    <tr>
+      <td>Licenciamento Microsoft corporativo não confirmado, invalidando a premissa de custo marginal zero do SQL Server</td>
+      <td><span class="badge badge-media">Média</span></td>
+      <td><span class="badge badge-alta">Alto</span></td>
+      <td>Confirmar regime de licenciamento antes de comprometer a escolha (ADR-003); PostgreSQL como alternativa pronta</td>
+      <td>Antes de qualquer compromisso de infraestrutura real</td>
+    </tr>
+    <tr>
+      <td>Squad sem experiência prévia em CQRS/Outbox subestima esforço</td>
+      <td><span class="badge badge-media">Média</span></td>
+      <td><span class="badge badge-alta">Alto</span></td>
+      <td>Spike time-boxed antes do Sprint 1; pareamento nos pontos críticos</td>
+      <td>Sprint 1 estourar em mais de 50% do esforço estimado</td>
+    </tr>
+    <tr>
+      <td>Ausência de pipeline de CI/CD atrasa qualquer entrega real</td>
+      <td><span class="badge badge-alta">Alta</span></td>
+      <td><span class="badge badge-alta">Alto</span></td>
+      <td>Tratar como Sprint 0 de qualquer adoção real, antes do Sprint 1 de negócio</td>
+      <td>Antes de qualquer deploy em ambiente com usuários reais</td>
+    </tr>
+    <tr>
+      <td>Calibração incorreta do circuit breaker gera falsos positivos</td>
+      <td><span class="badge badge-media">Média</span></td>
+      <td><span class="badge badge-media">Médio</span></td>
+      <td>Limiares conservadores no primeiro deploy, ajustados com dados reais</td>
+      <td>Taxa de ativação de contingência fora do esperado em produção</td>
+    </tr>
+    <tr>
+      <td>Economia/benefício do projeto não validado com dados reais de adoção</td>
+      <td><span class="badge badge-alta">Alta</span></td>
+      <td><span class="badge badge-media">Médio</span></td>
+      <td>Experimento de validação proposto (ver Usuários e Jornada) antes de escalar investimento</td>
+      <td>Fim do Sprint 3 / primeiro marco de decisão</td>
+    </tr>
+  </table>
+
+  <h3>Problemas já observados (distintos de risco futuro)</h3>
+  <p style="font-size:.88rem">Nenhum problema de produção foi observado até o momento — este é um projeto em fase de desenvolvimento inicial, ainda sem histórico de operação real.</p>
+</section>
+
+<!-- ===================== RECOMENDAÇÃO ===================== -->
+<section class="pagina" id="recomendacao">
+  <span class="rotulo-secao">Fechamento Orientado à Decisão</span>
+  <h2>Recomendação</h2>
+
+  <div class="card card-destaque" style="font-size:1rem">
+    <strong>Avançar</strong>, condicionado a três pré-requisitos antes do Sprint 1:
+    <ol style="margin:10px 0 0; padding-left:20px">
+      <li>Confirmar o regime de licenciamento Microsoft corporativo do banco, para validar ou revisar a escolha de SQL Server (ADR-003) com dados reais de custo.</li>
+      <li>Alocar ao menos dois desenvolvedores com experiência prévia em sistemas distribuídos, ou reservar tempo de capacitação/spike antes do Sprint 1 (ver McKinsey 7S, Staff).</li>
+      <li>Orçar e planejar um Sprint 0 de infraestrutura (CI/CD, scan de dependências, runbook mínimo) antes de qualquer ambiente com usuários reais — identificado como lacuna crítica de Systems no McKinsey 7S.</li>
+    </ol>
+  </div>
+
+  <h3>Próximos passos concretos</h3>
+  <ol style="font-size:.9rem">
+    <li><strong>Imediato:</strong> confirmar premissa de licenciamento SQL Server com a área responsável no banco (decisão com maior exposição financeira identificada).</li>
+    <li><strong>Antes do Sprint 1:</strong> alocar a squad e realizar o spike de Row-Level Security, se necessário.</li>
+    <li><strong>Ao final do Sprint 3:</strong> revisar adoção real, custo de operação observado versus estimado (ver Custos e TCO), e decidir entre escalar, ajustar escopo, ou pausar — conforme o teto de exposição financeira definido em Business Case.</li>
+  </ol>
+
+  <p style="font-size:.85rem; color:var(--cor-texto-secundario); margin-top:20px">Esta recomendação é condicionada às evidências disponíveis na data-base deste documento. Não constitui garantia de retorno financeiro, aprovação regulatória, ou cronograma livre de ajuste.</p>
+</section>
+
+<!-- ===================== APÊNDICES ===================== -->
+<section class="pagina" id="apendices">
+  <span class="rotulo-secao">Apêndices</span>
+  <h2>Memória de Cálculo, Fontes e Glossário</h2>
+
+  <h3>Memória de cálculo — investimento inicial</h3>
+  <div class="caixa-info" style="font-family:'SFMono-Regular',Consolas,monospace; font-size:.82rem">
+    Capacidade = 40h/semana × 0.8 × 6 semanas × 2 devs = 384h<br>
+    Custo de equipe = 384h × US$ 150/h = US$ 57.600<br>
+    Contingência = US$ 57.600 × 0.15 = US$ 8.640<br>
+    Investimento total = US$ 57.600 + US$ 8.640 = US$ 66.240
+  </div>
+
+  <h3>Memória de cálculo — TCO cenário base</h3>
+  <div class="caixa-info" style="font-family:'SFMono-Regular',Consolas,monospace; font-size:.82rem">
+    Operação mensal (base) = 600 + 1050 + 100 + 125 + 65 + 100 = US$ 2.040/mês<br>
+    Operação 12m = US$ 2.040 × 12 = US$ 24.480<br>
+    Operação 36m = US$ 2.040 × 36 = US$ 73.440<br>
+    TCO 12m = US$ 66.240 + US$ 24.480 = US$ 90.720<br>
+    TCO 36m = US$ 66.240 + US$ 73.440 = US$ 139.680
+  </div>
+
+  <h3>Fontes</h3>
+  <p style="font-size:.85rem">Valores de infraestrutura são estimativas de ordem de grandeza baseadas em faixas de preço públicas conhecidas da Microsoft Azure para os serviços equivalentes (App Service/AKS, SQL Database/Managed Instance, serviços gerenciados de mensageria), <strong>não uma cotação formal obtida junto ao provedor na data deste documento</strong>. Antes de qualquer compromisso orçamentário, obter cotação atualizada diretamente no portal de precificação do provedor escolhido, com a região, SKU e modalidade de compra (pay-as-you-go vs. reserva) confirmadas.</p>
+
+  <h3>Glossário</h3>
+  <table>
+    <tr><td><strong>RLS</strong></td><td>Row-Level Security — mecanismo do SQL Server que filtra automaticamente linhas visíveis por sessão</td></tr>
+    <tr><td><strong>CQRS</strong></td><td>Command Query Responsibility Segregation — separação entre modelo de escrita e modelo de leitura</td></tr>
+    <tr><td><strong>Outbox Pattern</strong></td><td>Padrão que garante publicação confiável de eventos gravando-os na mesma transação da escrita de domínio</td></tr>
+    <tr><td><strong>Idempotência</strong></td><td>Propriedade de uma operação que produz o mesmo resultado mesmo se executada mais de uma vez</td></tr>
+    <tr><td><strong>TCO</strong></td><td>Total Cost of Ownership — custo total de propriedade ao longo de um horizonte de tempo</td></tr>
+    <tr><td><strong>Tenant</strong></td><td>Um comerciante isolado dentro da plataforma multi-tenant, identificado por <code>ComercianteId</code></td></tr>
+  </table>
+
+  <h3>Limitações desta análise</h3>
+  <ul style="font-size:.85rem">
+    <li>Números financeiros são estimativas de ordem de grandeza, não cotações formais — ver seção Fontes.</li>
+    <li>Proto-persona e hipótese de valor não foram validadas com usuários reais — ver seção Usuários e Jornada.</li>
+    <li>Estimativas de esforço (horas-pessoa) não se baseiam em velocity histórica real da squad, por não haver histórico disponível nesta fase.</li>
+    <li>Este documento não substitui uma due diligence jurídica/regulatória sobre tratamento de dados financeiros, fora do escopo desta análise técnica.</li>
+  </ul>
+</section>
+
+</div>
+
+</body>
+</html>

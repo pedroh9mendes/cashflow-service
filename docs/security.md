@@ -4,7 +4,7 @@ Este documento descreve a estratégia de segurança da plataforma, com foco part
 
 ## Autenticação e autorização
 
-- Autenticação via JWT, emitido por um provedor de identidade (simplificado, no escopo deste desafio, para um endpoint de emissão de token com claim `ComercianteId`; em produção, seria um serviço de Identity dedicado ou IdP corporativo — ver subdomínio Identidade/Tenant em `architecture/c2-containers.md`).
+- Autenticação via JWT, emitido por um provedor de identidade (simplificado, no escopo atual, para um endpoint de emissão de token com claim `ComercianteId`; em produção, seria um serviço de Identity dedicado ou IdP corporativo — ver subdomínio Identidade/Tenant em `architecture/c2-containers.md`).
 - Cada canal de integração autorizado (app do lojista, parceiro, backoffice) recebe credenciais próprias via OAuth2 Client Credentials (ADR-010), distintas das credenciais de usuário final.
 - Todo endpoint de negócio exige token válido; não existem endpoints de domínio anônimos, exceto o `/health` (ver observability.md) e a status page pública, que expõem apenas estado agregado, nunca dados de negócio.
 
@@ -32,9 +32,9 @@ O risco mais crítico de uma plataforma multi-tenant é um comerciante conseguir
 - Segredos (connection strings, credenciais de broker, chaves de assinatura JWT) geridos via variáveis de ambiente/secrets do orquestrador, nunca versionados no repositório.
 - Validação de payload em todos os endpoints de escrita (schema, tipos, limites de valor) antes de qualquer processamento de negócio.
 
-## Recomendações de evolução para produção (não implementadas no escopo do desafio)
+## Recomendações de evolução para produção (não implementadas no escopo atual)
 
-As recomendações abaixo são reconhecidas como necessárias para um ambiente de produção real, mas não implementadas no código deste desafio, por não serem viáveis de demonstrar localmente com o tempo disponível. Estão documentadas aqui para deixar explícito o que foi efetivamente implementado versus o que é recomendação arquitetural:
+As recomendações abaixo são reconhecidas como necessárias para um ambiente de produção real, mas não implementadas no código atual, por não serem viáveis de demonstrar localmente com o tempo disponível nesta fase. Estão documentadas aqui para deixar explícito o que foi efetivamente implementado versus o que é recomendação arquitetural:
 
 - **Bulkhead (isolamento de pool de recursos por grupo de tenants).** Além da quota de requisições (ADR-009), isolar também pools de conexão de banco/fila por grupo de tenants, para que mesmo dentro da própria quota um tenant pesado não esgote recursos compartilhados usados por outros.
 - **WAF (Web Application Firewall) gerenciado na borda.** Proteção contra DDoS, injection e scraping antes mesmo de chegar ao API Gateway — recomendado via um serviço gerenciado (ex: Azure Front Door/WAF) em vez de implementado manualmente.

@@ -22,11 +22,11 @@ public sealed class SqlScriptRunner
         _logger = logger;
     }
 
-    public async Task<IReadOnlyList<SqlScriptResult>> ExecutarTodosAsync(CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<SqlScriptResult>> ExecutarTodosAsync(string sqlServerConnectionString, CancellationToken cancellationToken)
     {
         var resultados = new List<SqlScriptResult>();
 
-        await GarantirBancosCriadosAsync(cancellationToken);
+        await GarantirBancosCriadosAsync(sqlServerConnectionString, cancellationToken);
 
         foreach (var nomeArquivo in _options.SqlScriptsOrder)
         {
@@ -45,7 +45,7 @@ public sealed class SqlScriptRunner
             try
             {
                 var conteudo = await File.ReadAllTextAsync(caminho, cancellationToken);
-                await ExecutarScriptAsync(conteudo, banco, cancellationToken);
+                await ExecutarScriptAsync(conteudo, banco, sqlServerConnectionString, cancellationToken);
                 resultados.Add(new SqlScriptResult(nomeArquivo, true, $"Aplicado com sucesso em {banco}"));
             }
             catch (Exception ex)
@@ -58,9 +58,9 @@ public sealed class SqlScriptRunner
         return resultados;
     }
 
-    private async Task GarantirBancosCriadosAsync(CancellationToken cancellationToken)
+    private async Task GarantirBancosCriadosAsync(string sqlServerConnectionString, CancellationToken cancellationToken)
     {
-        await using var connection = new SqlConnection(_options.SqlServerConnectionString);
+        await using var connection = new SqlConnection(sqlServerConnectionString);
         await connection.OpenAsync(cancellationToken);
 
         foreach (var banco in new[] { "LancamentosDb", "ConsolidadoDb" })
@@ -72,9 +72,9 @@ public sealed class SqlScriptRunner
         }
     }
 
-    private async Task ExecutarScriptAsync(string conteudoScript, string banco, CancellationToken cancellationToken)
+    private async Task ExecutarScriptAsync(string conteudoScript, string banco, string sqlServerConnectionString, CancellationToken cancellationToken)
     {
-        var connectionString = new SqlConnectionStringBuilder(_options.SqlServerConnectionString)
+        var connectionString = new SqlConnectionStringBuilder(sqlServerConnectionString)
         {
             InitialCatalog = banco
         }.ConnectionString;

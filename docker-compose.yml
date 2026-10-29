@@ -99,11 +99,21 @@ services:
     depends_on:
       - lancamentos-api
       - consolidado-api
+      - prometheus
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
       StatusPage__LancamentosHealthUrl: "http://lancamentos-api:8080/health"
       StatusPage__ConsolidadoHealthUrl: "http://consolidado-api:8080/health"
+      StatusPage__LancamentosMetricasUrl: "http://lancamentos-api:8080/api/metricas/resumo"
+      StatusPage__ConsolidadoMetricasUrl: "http://consolidado-api:8080/api/metricas/resumo"
+      StatusPage__LancamentosSerieDiariaUrl: "http://lancamentos-api:8080/api/metricas/serie-diaria"
+      StatusPage__PrometheusUrl: "http://prometheus:9090"
+      Jwt__Issuer: fluxo-caixa-platform
+      Jwt__Audience: fluxo-caixa-clients
+      Jwt__SigningKey: "CHANGE_ME_MINIMUM_32_CHARACTERS_SECRET"
+      DashboardAuth__Usuario: admin
+      DashboardAuth__SenhaHash: "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9"
     ports:
       - "5100:8080"
     networks:

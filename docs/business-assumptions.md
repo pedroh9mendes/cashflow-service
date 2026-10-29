@@ -1,14 +1,14 @@
 # Premissas de Negócio Assumidas
 
-Este documento registra as inferências feitas a partir do enunciado do desafio que não estavam explícitas, mas que direcionam decisões estruturais da arquitetura. O objetivo é deixar claro o raciocínio por trás de cada premissa, para que ela possa ser questionada e sustentada de forma independente do restante da solução.
+Este documento registra as inferências feitas a partir dos requisitos do projeto que não estavam explícitas, mas que direcionam decisões estruturais da arquitetura. O objetivo é deixar claro o raciocínio por trás de cada premissa, para que ela possa ser questionada e revisada de forma independente do restante da solução.
 
 ## Premissa central: plataforma multi-tenant, não um comerciante isolado
 
-O enunciado descreve o problema como "um comerciante" controlando seu fluxo de caixa. Lido isoladamente, isso sugeriria um sistema de uso único. No entanto, três elementos do próprio desafio apontam para um cenário diferente:
+O enunciado descreve o problema como "um comerciante" controlando seu fluxo de caixa. Lido isoladamente, isso sugeriria um sistema de uso único. No entanto, três elementos do próprio requisito apontam para um cenário diferente:
 
 1. **Carga do requisito não funcional.** O serviço de consolidado diário precisa suportar 50 requisições por segundo em dias de pico. Um único comerciante consultando o próprio saldo não gera esse volume de forma sustentada — mesmo em um cenário de uso intenso, um comerciante individual dificilmente ultrapassa poucas requisições por minuto para esse tipo de consulta. 50 req/s é compatível com uma base de centenas ou milhares de comerciantes consultando simultaneamente, não com um único usuário.
 
-2. **Natureza do contratante.** O desafio é proposto por uma instituição financeira cujo modelo de negócio é, estruturalmente, atender uma carteira de lojistas e parceiros comerciais (modelo B2B2C típico de bancos com atuação em varejo). Um sistema de controle de fluxo de caixa construído por esse tipo de instituição tende a nascer como produto para a base de clientes comerciantes, não como ferramenta interna de uso único.
+2. **Natureza do contratante.** O projeto é proposto por uma instituição financeira cujo modelo de negócio é, estruturalmente, atender uma carteira de lojistas e parceiros comerciais (modelo B2B2C típico de bancos com atuação em varejo). Um sistema de controle de fluxo de caixa construído por esse tipo de instituição tende a nascer como produto para a base de clientes comerciantes, não como ferramenta interna de uso único.
 
 3. **Simplicidade do domínio funcional.** O escopo descrito (lançamentos de débito/crédito, saldo diário consolidado) é deliberadamente enxuto — não há menção a múltiplas contas correntes, filiais, centros de custo ou moedas por comerciante. Isso é consistente com um produto padronizado oferecido a muitos comerciantes de forma homogênea, e não com um sistema sob medida para as particularidades de um único negócio.
 

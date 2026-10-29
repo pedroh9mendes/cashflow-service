@@ -20,6 +20,26 @@ public enum EstadoExecucao
 public sealed record StatusExecucao(AcaoOrquestracao Acao, EstadoExecucao Estado, string Log, DateTimeOffset? IniciadoEm, DateTimeOffset? FinalizadoEm);
 
 /// <summary>
+/// Resultado da checagem de segurança que decide se as ações de orquestração podem rodar.
+/// Dois motivos de bloqueio, verificados sempre no servidor (não apenas escondidos no painel):
+/// a trava explícita de ambiente de produção, e os serviços de negócio (Lançamentos/Consolidado)
+/// estarem respondendo — aplicar scripts/popular dados com a aplicação no ar arrisca corromper
+/// dados reais em uso.
+/// </summary>
+public sealed record BloqueioOrquestracao(bool Bloqueado, string? Motivo);
+
+/// <summary>
+/// Parâmetros de ambiente informados explicitamente pelo operador antes de disparar uma ação
+/// de orquestração. Nenhum valor aqui é assumido silenciosamente: o painel sempre exibe o
+/// default local para confirmação, mas o operador pode apontar para outro servidor (ex: ambiente
+/// do cliente) antes de executar.
+/// </summary>
+public sealed record ParametrosExecucao(
+    string? SqlServerConnectionString = null,
+    string? SeedLancamentosBaseUrl = null,
+    string? SeedConsolidadoBaseUrl = null);
+
+/// <summary>
 /// Orquestra ações de setup local (scripts SQL e seed de dados) disparadas pelo painel.
 /// Cada ação roda no máximo uma vez por vez - uma segunda chamada enquanto a primeira
 /// ainda está em execução retorna o estado atual em vez de disparar uma execução paralela.
@@ -28,6 +48,7 @@ public sealed class OrchestrationService
 {
     private readonly OrchestrationOptions _options;
     private readonly SqlScriptRunner _sqlScriptRunner;
+    private readonly StatusPageService _statusPageService;
     private readonly ILogger<OrchestrationService> _logger;
     private readonly Dictionary<AcaoOrquestracao, StatusExecucao> _estados = new();
     private readonly SemaphoreSlim _lock = new(1, 1);
@@ -35,10 +56,12 @@ public sealed class OrchestrationService
     public OrchestrationService(
         IOptions<OrchestrationOptions> options,
         SqlScriptRunner sqlScriptRunner,
+        StatusPageService statusPageService,
         ILogger<OrchestrationService> logger)
     {
         _options = options.Value;
         _sqlScriptRunner = sqlScriptRunner;
+        _statusPageService = statusPageService;
         _logger = logger;
     }
 
@@ -49,8 +72,45 @@ public sealed class OrchestrationService
             : new StatusExecucao(acao, EstadoExecucao.Ociosa, string.Empty, null, null);
     }
 
-    public async Task<StatusExecucao> IniciarAsync(AcaoOrquestracao acao, CancellationToken cancellationToken)
+    /// <summary>
+    /// Verifica se as ações de orquestração podem rodar neste momento. Bloqueia incondicionalmente
+    /// se a trava de ambiente de produção estiver ativa, e bloqueia também se Lançamentos ou
+    /// Consolidado estiverem respondendo — scripts de schema e seed de dados não devem rodar
+    /// contra uma aplicação em uso.
+    /// </summary>
+    public async Task<BloqueioOrquestracao> VerificarBloqueioAsync(CancellationToken cancellationToken)
     {
+        if (_options.AmbienteProducao)
+        {
+            return new BloqueioOrquestracao(true,
+                "Este ambiente está marcado como produção (Orchestration__AmbienteProducao=true). " +
+                "Scripts de schema e seed de dados de demonstração nunca são executados pelo painel em produção.");
+        }
+
+        var status = await _statusPageService.ObterStatusConsolidadoAsync(cancellationToken);
+        var servicosNoAr = status.Where(s => s.Status != StatusServico.Indisponivel).ToList();
+
+        if (servicosNoAr.Count > 0)
+        {
+            var nomes = string.Join(" e ", servicosNoAr.Select(s => s.Servico));
+            var verbo = servicosNoAr.Count > 1 ? "estão" : "está";
+            return new BloqueioOrquestracao(true,
+                $"{nomes} ainda {verbo} no ar. Pare a aplicação antes de aplicar scripts de banco ou popular dados " +
+                "de demonstração — executar essas ações com a aplicação em uso pode corromper dados reais. " +
+                "Execute: docker compose stop lancamentos-api consolidado-api");
+        }
+
+        return new BloqueioOrquestracao(false, null);
+    }
+
+    public async Task<StatusExecucao> IniciarAsync(AcaoOrquestracao acao, ParametrosExecucao parametros, CancellationToken cancellationToken)
+    {
+        var bloqueio = await VerificarBloqueioAsync(cancellationToken);
+        if (bloqueio.Bloqueado)
+        {
+            throw new InvalidOperationException(bloqueio.Motivo);
+        }
+
         await _lock.WaitAsync(cancellationToken);
         try
         {
@@ -67,19 +127,19 @@ public sealed class OrchestrationService
             _lock.Release();
         }
 
-        _ = Task.Run(() => ExecutarAsync(acao), CancellationToken.None);
+        _ = Task.Run(() => ExecutarAsync(acao, parametros), CancellationToken.None);
 
         return _estados[acao];
     }
 
-    private async Task ExecutarAsync(AcaoOrquestracao acao)
+    private async Task ExecutarAsync(AcaoOrquestracao acao, ParametrosExecucao parametros)
     {
         try
         {
             var log = acao switch
             {
-                AcaoOrquestracao.AplicarScriptsSql => await ExecutarScriptsSqlAsync(),
-                AcaoOrquestracao.PopularDadosDemonstracao => await ExecutarSeedAsync(),
+                AcaoOrquestracao.AplicarScriptsSql => await ExecutarScriptsSqlAsync(parametros),
+                AcaoOrquestracao.PopularDadosDemonstracao => await ExecutarSeedAsync(parametros),
                 _ => throw new ArgumentOutOfRangeException(nameof(acao))
             };
 
@@ -92,9 +152,13 @@ public sealed class OrchestrationService
         }
     }
 
-    private async Task<string> ExecutarScriptsSqlAsync()
+    private async Task<string> ExecutarScriptsSqlAsync(ParametrosExecucao parametros)
     {
-        var resultados = await _sqlScriptRunner.ExecutarTodosAsync(CancellationToken.None);
+        var connectionString = string.IsNullOrWhiteSpace(parametros.SqlServerConnectionString)
+            ? _options.SqlServerConnectionString
+            : parametros.SqlServerConnectionString;
+
+        var resultados = await _sqlScriptRunner.ExecutarTodosAsync(connectionString, CancellationToken.None);
 
         var linhas = resultados.Select(r => $"{(r.Sucesso ? "OK" : "ERRO")} - {r.Script}: {r.Mensagem}");
         var log = string.Join("\n", linhas);
@@ -107,7 +171,7 @@ public sealed class OrchestrationService
         return log;
     }
 
-    private async Task<string> ExecutarSeedAsync()
+    private async Task<string> ExecutarSeedAsync(ParametrosExecucao parametros)
     {
         if (!File.Exists(_options.SeedDllPath))
         {
@@ -116,10 +180,18 @@ public sealed class OrchestrationService
                 "Reconstrua a imagem do statuspage-api (docker compose up -d --build statuspage-api).");
         }
 
+        var lancamentosBaseUrl = string.IsNullOrWhiteSpace(parametros.SeedLancamentosBaseUrl)
+            ? _options.SeedLancamentosBaseUrl
+            : parametros.SeedLancamentosBaseUrl;
+
+        var consolidadoBaseUrl = string.IsNullOrWhiteSpace(parametros.SeedConsolidadoBaseUrl)
+            ? _options.SeedConsolidadoBaseUrl
+            : parametros.SeedConsolidadoBaseUrl;
+
         var startInfo = new ProcessStartInfo
         {
             FileName = "dotnet",
-            Arguments = $"\"{_options.SeedDllPath}\" \"{_options.SeedLancamentosBaseUrl}\" \"{_options.SeedConsolidadoBaseUrl}\"",
+            Arguments = $"\"{_options.SeedDllPath}\" \"{lancamentosBaseUrl}\" \"{consolidadoBaseUrl}\"",
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,

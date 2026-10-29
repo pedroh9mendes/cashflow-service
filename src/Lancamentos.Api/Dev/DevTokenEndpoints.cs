@@ -7,8 +7,13 @@ using Shared.Security;
 
 namespace Lancamentos.Api.Dev;
 
+/// <summary>Dados para emissão de um token JWT de teste para um comerciante específico.</summary>
+/// <param name="ComercianteId">Identificador do comerciante (tenant) a representar no token.</param>
 public sealed record EmitirTokenRequest(Guid ComercianteId);
 
+/// <summary>Token JWT emitido, pronto para uso no cabeçalho <c>Authorization: Bearer {Token}</c>.</summary>
+/// <param name="Token">Token JWT assinado.</param>
+/// <param name="ExpiraEm">Data e hora (UTC) de expiração do token.</param>
 public sealed record EmitirTokenResponse(string Token, DateTimeOffset ExpiraEm);
 
 /// <summary>
@@ -50,6 +55,13 @@ public static class DevTokenEndpoints
             var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 
             return Results.Ok(new EmitirTokenResponse(tokenString, expiraEm));
-        }).AllowAnonymous();
+        })
+        .AllowAnonymous()
+        .WithTags("Desenvolvimento")
+        .WithSummary("Emite um token JWT de teste para um comerciante (apenas em ambiente de desenvolvimento).")
+        .WithDescription("Substitui um provedor de identidade real para fins de demonstração local. " +
+            "Nunca é mapeado em produção — disponível apenas quando ASPNETCORE_ENVIRONMENT=Development.")
+        .Produces<EmitirTokenResponse>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest);
     }
 }

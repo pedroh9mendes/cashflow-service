@@ -1,6 +1,6 @@
 # Estimativa de Custos de Infraestrutura
 
-Estimativa de custo mensal de infraestrutura em nuvem (Microsoft Azure, por aderência à stack .NET/SQL Server adotada — ver ADR-003), para um cenário de carteira de porte inicial/médio (algumas centenas de comerciantes ativos, carga compatível com os 50 req/s de pico do desafio). Valores aproximados, para fins de ordem de grandeza e comparação de trade-offs, não uma cotação formal.
+Estimativa de custo mensal de infraestrutura em nuvem (Microsoft Azure, por aderência à stack .NET/SQL Server adotada — ver ADR-003), para um cenário de carteira de porte inicial/médio (algumas centenas de comerciantes ativos, carga compatível com os 50 req/s de pico previstos). Valores aproximados, para fins de ordem de grandeza e comparação de trade-offs, não uma cotação formal.
 
 ## Premissas de dimensionamento
 

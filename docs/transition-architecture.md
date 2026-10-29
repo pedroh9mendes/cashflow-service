@@ -1,6 +1,6 @@
 # Arquitetura de Transição (Migração de Legado)
 
-Este documento descreve um cenário hipotético de migração de comerciantes de um sistema legado de controle de fluxo de caixa (ex: planilhas individuais, ou um sistema próprio mais antigo mantido pelo banco) para a plataforma multi-tenant alvo descrita neste projeto, já que o desafio prevê considerar essa arquitetura de transição quando aplicável.
+Este documento descreve um cenário hipotético de migração de comerciantes de um sistema legado de controle de fluxo de caixa (ex: planilhas individuais, ou um sistema próprio mais antigo mantido pelo banco) para a plataforma multi-tenant alvo descrita neste projeto, considerando essa arquitetura de transição como parte do planejamento de adoção.
 
 ## Cenário assumido
 

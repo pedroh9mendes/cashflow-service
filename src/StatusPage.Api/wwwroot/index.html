@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FluxoCaixa Platform — Painel de Controle</title>
+<title>CashFlow Service — Painel de Controle</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
@@ -12,169 +12,250 @@
 
 <header class="app-header">
   <div class="marca">
-    <div class="marca-icone">FC</div>
+    <div class="marca-logo">
+      <img src="assets/carrefour-banco-logo.png" alt="Carrefour Banco" />
+    </div>
+    <div class="marca-separador"></div>
     <div class="marca-texto">
-      <h1>FluxoCaixa Platform</h1>
-      <p>Controle de lançamentos e saldo diário consolidado — multi-tenant</p>
+      <h1>CashFlow Service</h1>
+      <p>Controle de lançamentos e saldo diário consolidado — multi-empresa</p>
     </div>
   </div>
-  <nav class="abas">
-    <button class="aba-botao ativa" data-pagina="painel">Painel</button>
-    <button class="aba-botao" data-pagina="docs">Documentação</button>
-  </nav>
+  <button class="botao-sair" onclick="sair()">Sair</button>
 </header>
 
-<main>
+<!-- ===== ROTA: PAINEL ===== -->
+<main id="rota-painel" class="rota ativa">
 
-  <!-- ===== PÁGINA: PAINEL ===== -->
-  <section id="pagina-painel" class="pagina ativa">
+  <div class="secao">
+    <div class="secao-titulo">
+      <h2>Acesso rápido</h2>
+    </div>
+    <div class="grid grid-links">
+      <a class="card link-card" href="/status" target="_blank" rel="noopener">
+        <span class="icone">🟢</span>
+        <span class="titulo">Status page pública</span>
+        <span class="desc">Link para compartilhar com o TI do comerciante</span>
+      </a>
+      <a class="card link-card" href="http://localhost:5080/swagger" target="_blank" rel="noopener">
+        <span class="icone">📘</span>
+        <span class="titulo">Swagger — Lançamentos</span>
+        <span class="desc">Documentação interativa para integração</span>
+      </a>
+      <a class="card link-card" href="http://localhost:5090/swagger" target="_blank" rel="noopener">
+        <span class="icone">📗</span>
+        <span class="titulo">Swagger — Consolidado</span>
+        <span class="desc">Documentação interativa para integração</span>
+      </a>
+      <a class="card link-card" href="http://localhost:3000" target="_blank" rel="noopener">
+        <span class="icone">📈</span>
+        <span class="titulo">Grafana</span>
+        <span class="desc">Métricas e observabilidade</span>
+      </a>
+      <a class="card link-card" href="http://localhost:15672" target="_blank" rel="noopener">
+        <span class="icone">🐇</span>
+        <span class="titulo">RabbitMQ Management</span>
+        <span class="desc">Filas e mensageria</span>
+      </a>
+      <a class="card link-card" href="http://localhost:9090" target="_blank" rel="noopener">
+        <span class="icone">🔍</span>
+        <span class="titulo">Prometheus</span>
+        <span class="desc">Métricas brutas</span>
+      </a>
+      <a class="card link-card" href="http://localhost:9093" target="_blank" rel="noopener">
+        <span class="icone">🔔</span>
+        <span class="titulo">Alertmanager</span>
+        <span class="desc">Gestão de alertas</span>
+      </a>
+    </div>
+  </div>
 
-    <div class="secao">
-      <div class="secao-titulo">
-        <h2>Saúde dos serviços</h2>
-        <span class="descricao">Atualizado automaticamente a cada 15s · <span id="status-atualizado"></span></span>
-      </div>
-      <div id="status-grid" class="grid grid-status">
-        <div class="card status-card"><span class="nome">Carregando…</span></div>
-      </div>
+  <div class="secao">
+    <div class="secao-titulo">
+      <h2>Saúde dos serviços</h2>
+      <span class="descricao">Refresh 15s</span>
+    </div>
+    <div id="status-grid" class="grid grid-status">
+      <div class="card status-card"><span class="nome">Carregando…</span></div>
+    </div>
+  </div>
+
+  <div class="secao">
+    <div class="secao-titulo">
+      <h2>Volume de processamento e saúde operacional</h2>
+      <span class="descricao">Refresh 15s</span>
+    </div>
+    <div id="metricas-grid" class="grid grid-metricas">
+      <div class="card metrica-card"><span class="metrica-rotulo">Carregando…</span></div>
     </div>
 
-    <div class="secao">
-      <div class="secao-titulo">
-        <h2>Ações de instalação e carga</h2>
-        <span class="descricao">Executam processos reais na máquina local</span>
-      </div>
-      <div class="grid grid-acoes">
-
-        <div class="card acao-card">
-          <h3>Subir ambiente completo</h3>
-          <p>Constrói e inicia todos os containers (SQL Server, RabbitMQ, APIs, observabilidade).</p>
-          <div class="aviso-limitacao">
-            Este painel roda dentro de um container e não tem acesso ao Docker do host
-            (Docker-in-Docker não está configurado neste projeto). Execute a partir de um terminal,
-            na raiz do repositório:
-            <br><code>docker compose up -d --build</code>
-          </div>
-          <button class="botao botao-secundario" onclick="copiarComando('docker compose up -d --build')">Copiar comando</button>
+    <div class="grid grid-graficos">
+      <div class="card grafico-card grafico-card-linha">
+        <h3>Tendência de processamento — últimos 14 dias</h3>
+        <div class="grafico-canvas-wrapper">
+          <canvas id="grafico-tendencia"></canvas>
         </div>
-
-        <div class="card acao-card">
-          <h3>Parar ambiente</h3>
-          <p>Encerra todos os containers da stack, preservando os volumes de dados.</p>
-          <div class="aviso-limitacao">
-            Mesma limitação acima — execute a partir de um terminal, na raiz do repositório:
-            <br><code>docker compose down</code>
-          </div>
-          <button class="botao botao-secundario" onclick="copiarComando('docker compose down')">Copiar comando</button>
-        </div>
-
-        <div class="card acao-card">
-          <h3>Aplicar scripts de banco</h3>
-          <p>Cria os bancos e tabelas (se necessário) e aplica a política de Row-Level Security em Lançamentos e Consolidado.</p>
-          <button class="botao botao-primario" id="btn-sql" onclick="executarAcao('apply-sql-scripts', 'btn-sql', 'log-sql')">
-            Aplicar scripts
-          </button>
-          <div class="log-execucao" id="log-sql"></div>
-        </div>
-
-        <div class="card acao-card">
-          <h3>Popular dados de demonstração</h3>
-          <p>Gera uma carteira de ~20 comerciantes com 30 dias de lançamentos via chamadas reais à API (pode levar alguns minutos).</p>
-          <button class="botao botao-primario" id="btn-seed" onclick="executarAcao('seed', 'btn-seed', 'log-seed')">
-            Rodar seed
-          </button>
-          <div class="log-execucao" id="log-seed"></div>
-        </div>
-
       </div>
-    </div>
-
-    <div class="secao">
-      <div class="secao-titulo">
-        <h2>Acesso rápido</h2>
-        <span class="descricao">Abre em uma nova aba</span>
-      </div>
-      <div class="grid grid-links">
-        <a class="card link-card" href="http://localhost:5080" target="_blank" rel="noopener">
-          <span class="icone">🧾</span>
-          <span class="titulo">Lançamentos.Api</span>
-          <span class="desc">Registro de débitos e créditos</span>
-        </a>
-        <a class="card link-card" href="http://localhost:5090" target="_blank" rel="noopener">
-          <span class="icone">📊</span>
-          <span class="titulo">Consolidado.Api</span>
-          <span class="desc">Consulta de saldo diário</span>
-        </a>
-        <a class="card link-card" href="http://localhost:3000" target="_blank" rel="noopener">
-          <span class="icone">📈</span>
-          <span class="titulo">Grafana</span>
-          <span class="desc">Métricas e observabilidade</span>
-        </a>
-        <a class="card link-card" href="http://localhost:15672" target="_blank" rel="noopener">
-          <span class="icone">🐇</span>
-          <span class="titulo">RabbitMQ Management</span>
-          <span class="desc">Filas e mensageria</span>
-        </a>
-        <a class="card link-card" href="http://localhost:9090" target="_blank" rel="noopener">
-          <span class="icone">🔍</span>
-          <span class="titulo">Prometheus</span>
-          <span class="desc">Métricas brutas</span>
-        </a>
-        <a class="card link-card" href="http://localhost:9093" target="_blank" rel="noopener">
-          <span class="icone">🔔</span>
-          <span class="titulo">Alertmanager</span>
-          <span class="desc">Gestão de alertas</span>
-        </a>
-      </div>
-    </div>
-
-    <div class="secao">
-      <div class="secao-titulo">
-        <h2>Obter token de desenvolvimento</h2>
-        <span class="descricao">Apenas em ambiente Development</span>
-      </div>
-      <div class="card">
-        <div class="token-form">
-          <div class="campo">
-            <label for="input-comerciante">ComercianteId</label>
-            <input type="text" id="input-comerciante" value="11111111-1111-1111-1111-111111111111">
-          </div>
-          <button class="botao botao-secundario" onclick="gerarComercianteAleatorio()">Gerar aleatório</button>
-          <button class="botao botao-destaque" onclick="obterToken()">Obter token</button>
-        </div>
-        <div class="token-resultado" id="token-resultado">
-          <div class="token-caixa">
-            <code id="token-valor"></code>
-            <button class="botao botao-secundario" onclick="copiarToken()">Copiar</button>
-          </div>
+      <div class="card grafico-card">
+        <h3>Distribuição por tipo — últimos 14 dias</h3>
+        <div class="grafico-canvas-wrapper">
+          <canvas id="grafico-distribuicao"></canvas>
         </div>
       </div>
     </div>
+  </div>
 
-  </section>
-
-  <!-- ===== PÁGINA: DOCUMENTAÇÃO ===== -->
-  <section id="pagina-docs" class="pagina">
-    <div class="docs-layout">
-      <aside class="docs-sidebar">
-        <input type="text" class="docs-busca" id="docs-busca" placeholder="Buscar na documentação…">
-        <div id="docs-lista"></div>
-      </aside>
-      <article class="docs-conteudo" id="docs-conteudo">
-        <div class="docs-vazio">Selecione um documento na barra lateral.</div>
-      </article>
+  <div class="secao">
+    <div class="secao-titulo">
+      <h2>Ações de instalação e carga</h2>
+      <span class="descricao">Executam processos reais na máquina local</span>
     </div>
-  </section>
+    <div class="grid grid-acoes">
+
+      <div class="card acao-card">
+        <h3>Subir ambiente completo</h3>
+        <p>Constrói e inicia todos os containers (SQL Server, RabbitMQ, APIs, observabilidade).</p>
+        <div class="aviso-limitacao">
+          Este painel roda dentro de um container e não tem acesso ao Docker do host
+          (Docker-in-Docker não está configurado neste projeto). Execute a partir de um terminal,
+          na raiz do repositório:
+          <br><code>docker compose up -d --build</code>
+        </div>
+        <button class="botao botao-secundario" onclick="copiarComando('docker compose up -d --build')">Copiar comando</button>
+      </div>
+
+      <div class="card acao-card">
+        <h3>Parar ambiente</h3>
+        <p>Encerra todos os containers da stack, preservando os volumes de dados.</p>
+        <div class="aviso-limitacao">
+          Mesma limitação acima — execute a partir de um terminal, na raiz do repositório:
+          <br><code>docker compose down</code>
+        </div>
+        <button class="botao botao-secundario" onclick="copiarComando('docker compose down')">Copiar comando</button>
+      </div>
+
+      <div class="card acao-card">
+        <h3>Aplicar scripts de banco</h3>
+        <p>Cria os bancos e tabelas (se necessário) e aplica a política de Row-Level Security em Lançamentos e Consolidado.</p>
+        <div class="aviso-limitacao aviso-bloqueio-orquestracao" id="aviso-bloqueio-sql" style="display: none;"></div>
+        <button class="botao botao-primario" id="btn-sql" onclick="abrirModalConfirmacao('apply-sql-scripts', 'btn-sql', 'log-sql')">
+          Aplicar scripts
+        </button>
+        <div class="log-execucao" id="log-sql"></div>
+      </div>
+
+      <div class="card acao-card">
+        <h3>Popular dados de demonstração</h3>
+        <p>Gera uma carteira de ~20 comerciantes com 30 dias de lançamentos via chamadas reais à API (pode levar alguns minutos).</p>
+        <div class="aviso-limitacao aviso-bloqueio-orquestracao" id="aviso-bloqueio-seed" style="display: none;"></div>
+        <button class="botao botao-primario" id="btn-seed" onclick="abrirModalConfirmacao('seed', 'btn-seed', 'log-seed')">
+          Rodar seed
+        </button>
+        <div class="log-execucao" id="log-seed"></div>
+      </div>
+
+      <div class="card acao-card">
+        <h3>Documentação da arquitetura</h3>
+        <p>README, ADRs e o fluxo completo de um lançamento até o saldo consolidado, em uma página dedicada.</p>
+        <button class="botao botao-primario" onclick="irParaDocumentacao()">Abrir documentação</button>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="secao">
+    <div class="secao-titulo">
+      <h2>Obter token de autenticação para teste</h2>
+      <span class="descricao">Apenas em ambiente Development</span>
+    </div>
+    <div class="card">
+      <p class="secao-explicacao">
+        Todas as APIs exigem um token JWT com a identificação do comerciante autenticado — não há
+        provedor de identidade real neste escopo. Use este formulário para gerar um token de teste
+        e usá-lo no botão "Authorize" do Swagger (ou em qualquer cliente HTTP) ao explorar os
+        endpoints manualmente.
+      </p>
+      <div class="token-form">
+        <div class="campo">
+          <label for="input-comerciante">ComercianteId</label>
+          <input type="text" id="input-comerciante" placeholder="Gere um identificador ou informe o seu">
+        </div>
+        <button class="botao botao-secundario" onclick="gerarComercianteAleatorio()">Gerar aleatório</button>
+        <button class="botao botao-destaque" onclick="obterToken()">Obter token</button>
+      </div>
+      <div class="token-resultado" id="token-resultado">
+        <div class="token-caixa">
+          <code id="token-valor"></code>
+          <button class="botao botao-secundario" onclick="copiarToken()">Copiar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="rodape">
+    powered by Pedro Mendes
+  </footer>
 
 </main>
 
-<footer class="rodape">
-  Projeto desenvolvido para desafio técnico de Arquitetura de Soluções ·
-  <a href="?doc=readme" onclick="irParaDocumentacao(event, 'readme')">README</a> ·
-  <a href="?doc=adr-001" onclick="irParaDocumentacao(event, 'adr-001')">ADRs</a>
-</footer>
+<!-- ===== ROTA: DOCUMENTAÇÃO ===== -->
+<main id="rota-docs" class="rota">
+
+  <button class="botao-voltar" onclick="irParaPainel()">← Voltar ao painel</button>
+
+  <div class="docs-layout">
+    <aside class="docs-sidebar">
+      <input type="text" class="docs-busca" id="docs-busca" placeholder="Buscar na documentação…">
+      <div id="docs-lista"></div>
+    </aside>
+    <article class="docs-conteudo" id="docs-conteudo">
+      <div class="docs-vazio">Selecione um documento na barra lateral.</div>
+    </article>
+  </div>
+
+  <footer class="rodape">
+    powered by Pedro Mendes
+  </footer>
+
+</main>
+
+<!-- ===== MODAL: Confirmação de ambiente antes de executar ações de orquestração ===== -->
+<div class="modal-overlay" id="modal-confirmacao">
+  <div class="modal-caixa">
+    <h3 id="modal-titulo">Confirmar ambiente</h3>
+    <p class="modal-aviso">
+      Confira para qual servidor esta ação vai ser executada antes de confirmar. Os valores abaixo
+      vêm pré-preenchidos com o ambiente local do container, mas podem ser alterados para apontar
+      a outro servidor (ex: ambiente do cliente).
+    </p>
+
+    <div id="modal-campos-sql" class="modal-campos">
+      <div class="campo">
+        <label for="modal-sql-connstring">Connection string do SQL Server</label>
+        <input type="text" id="modal-sql-connstring" placeholder="Server=...;User Id=...;Password=...;">
+      </div>
+    </div>
+
+    <div id="modal-campos-seed" class="modal-campos">
+      <div class="campo">
+        <label for="modal-seed-lancamentos">URL base — Lançamentos API</label>
+        <input type="text" id="modal-seed-lancamentos" placeholder="http://lancamentos-api:8080">
+      </div>
+      <div class="campo">
+        <label for="modal-seed-consolidado">URL base — Consolidado API</label>
+        <input type="text" id="modal-seed-consolidado" placeholder="http://consolidado-api:8080">
+      </div>
+    </div>
+
+    <div class="modal-acoes">
+      <button class="botao botao-secundario" onclick="fecharModalConfirmacao()">Cancelar</button>
+      <button class="botao botao-destaque" onclick="confirmarEExecutar()">Confirmar e executar</button>
+    </div>
+  </div>
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/13.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

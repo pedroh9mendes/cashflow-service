@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CashFlow Service — Instalação assistida</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="onboarding.css">
+</head>
+<body>
+
+<div class="pagina-checando" id="pagina-checando">
+  <div class="checando-caixa">
+    <div class="spinner-grande"></div>
+    <p>Verificando se o ambiente já está em execução…</p>
+  </div>
+</div>
+
+<div class="pagina-ja-rodando" id="pagina-ja-rodando">
+  <div class="aviso-caixa">
+    <div class="marca-onboarding">
+      <img src="assets/carrefour-banco-logo.png" alt="Carrefour Banco" />
+    </div>
+    <span class="icone-grande">✅</span>
+    <h1>O ambiente já está em execução</h1>
+    <p>O painel em <code>localhost:5100</code> já está respondendo. A instalação assistida só faz sentido antes de qualquer serviço estar no ar — isso evita reconfigurar ou reiniciar algo que já está funcionando.</p>
+    <a class="botao botao-primario" href="http://localhost:5100" target="_blank" rel="noopener">Abrir o painel</a>
+    <button class="botao-texto" onclick="forcarQuiz()">Quero rever a instalação assistida mesmo assim</button>
+  </div>
+</div>
+
+<div class="app" id="app" style="display: none;">
+
+  <header class="topo">
+    <div class="marca-onboarding">
+      <img src="assets/carrefour-banco-logo.png" alt="Carrefour Banco" />
+    </div>
+    <div class="marca-texto">
+      <h1>CashFlow Service</h1>
+      <p>Instalação assistida do ambiente</p>
+    </div>
+  </header>
+
+  <div class="progresso-trilha">
+    <div class="progresso-barra" id="progresso-barra"></div>
+  </div>
+  <div class="progresso-rotulo" id="progresso-rotulo"></div>
+
+  <main class="conteudo">
+
+    <!-- Etapa 1: Boas-vindas -->
+    <section class="etapa" data-etapa="1">
+      <h2>Bem-vindo à instalação assistida</h2>
+      <p class="etapa-descricao">
+        Este assistente conduz você pelas etapas necessárias para subir o ambiente do CashFlow
+        Service do zero — independente do servidor onde ele será instalado. Cada etapa confirma
+        um pré-requisito ou executa uma ação antes de liberar a próxima, reduzindo o risco de um
+        passo ser pulado por engano.
+      </p>
+      <div class="info-caixa">
+        O que este assistente cobre: pré-requisitos de infraestrutura, escolha do tipo de
+        ambiente, variáveis sensíveis a revisar, o comando de subida, verificação de saúde dos
+        serviços, e os passos pós-instalação (schema do banco e dados de demonstração).
+      </div>
+      <div class="etapa-acoes">
+        <button class="botao botao-primario" onclick="irParaEtapa(2)">Começar</button>
+      </div>
+    </section>
+
+    <!-- Etapa 2: Pré-requisitos -->
+    <section class="etapa" data-etapa="2">
+      <h2>Pré-requisitos de infraestrutura</h2>
+      <p class="etapa-descricao">
+        O ambiente roda inteiramente em containers Docker. Confirme cada item antes de prosseguir
+        — isso vale tanto para a sua máquina local quanto para qualquer servidor onde o ambiente
+        será implantado.
+      </p>
+
+      <div class="checklist">
+        <label class="checklist-item">
+          <input type="checkbox" class="chk-prereq" onchange="atualizarPrereq()">
+          <div>
+            <strong>Docker Engine instalado e em execução</strong>
+            <p>Docker Desktop (Windows/Mac) ou Docker Engine (Linux), versão 24 ou superior. <a href="https://docs.docker.com/get-docker/" target="_blank" rel="noopener">Guia oficial de instalação ↗</a></p>
+          </div>
+        </label>
+        <label class="checklist-item">
+          <input type="checkbox" class="chk-prereq" onchange="atualizarPrereq()">
+          <div>
+            <strong>Docker Compose disponível</strong>
+            <p>Já incluso no Docker Desktop. Em Linux, confirme com <code>docker compose version</code>.</p>
+          </div>
+        </label>
+        <label class="checklist-item">
+          <input type="checkbox" class="chk-prereq" onchange="atualizarPrereq()">
+          <div>
+            <strong>Portas livres no host</strong>
+            <p>5080, 5090, 5100, 1433, 5672, 15672, 9090, 9093 e 3000 não podem estar em uso por outro processo.</p>
+          </div>
+        </label>
+        <label class="checklist-item">
+          <input type="checkbox" class="chk-prereq" onchange="atualizarPrereq()">
+          <div>
+            <strong>Recursos mínimos disponíveis</strong>
+            <p>Pelo menos 4 GB de RAM e 10 GB de espaço em disco livres alocados ao Docker — SQL Server e RabbitMQ são os serviços mais exigentes do conjunto.</p>
+          </div>
+        </label>
+      </div>
+
+      <div class="etapa-acoes">
+        <button class="botao botao-secundario" onclick="irParaEtapa(1)">Voltar</button>
+        <button class="botao botao-primario" id="btn-avancar-prereq" onclick="irParaEtapa(3)" disabled>Confirmar e avançar</button>
+      </div>
+    </section>
+
+    <!-- Etapa 3: Tipo de ambiente -->
+    <section class="etapa" data-etapa="3">
+      <h2>Onde este ambiente será instalado?</h2>
+      <p class="etapa-descricao">
+        A stack é a mesma em qualquer lugar — o que muda é como os serviços são acessados de fora
+        do host. Escolha a opção que descreve este servidor.
+      </p>
+
+      <div class="opcoes-ambiente">
+        <label class="opcao-card">
+          <input type="radio" name="tipo-ambiente" value="local" checked onchange="atualizarTipoAmbiente()">
+          <div>
+            <strong>Estação local de desenvolvimento</strong>
+            <p>Os serviços são acessados via <code>localhost</code>. Nenhuma configuração adicional de rede é necessária.</p>
+          </div>
+        </label>
+        <label class="opcao-card">
+          <input type="radio" name="tipo-ambiente" value="servidor" onchange="atualizarTipoAmbiente()">
+          <div>
+            <strong>Servidor remoto (homologação, cliente, nuvem)</strong>
+            <p>Os serviços precisam ser acessados pelo IP ou hostname do servidor — libere as portas listadas na etapa anterior no firewall/grupo de segurança, e troque as credenciais padrão (próxima etapa).</p>
+          </div>
+        </label>
+      </div>
+
+      <div class="aviso-caixa aviso-servidor" id="aviso-servidor" style="display: none;">
+        Em um servidor remoto, substitua <code>localhost</code> por o IP/hostname do servidor em
+        todas as URLs mencionadas neste assistente e na documentação. As portas continuam as
+        mesmas, mas precisam estar liberadas para a origem que vai acessá-las.
+      </div>
+
+      <div class="etapa-acoes">
+        <button class="botao botao-secundario" onclick="irParaEtapa(2)">Voltar</button>
+        <button class="botao botao-primario" onclick="irParaEtapa(4)">Avançar</button>
+      </div>
+    </section>
+
+    <!-- Etapa 4: Credenciais e segredos -->
+    <section class="etapa" data-etapa="4">
+      <h2>Revise as credenciais padrão</h2>
+      <p class="etapa-descricao">
+        O <code>docker-compose.yml</code> vem com credenciais padrão para subir rapidamente em
+        ambiente de desenvolvimento. Elas <strong>nunca</strong> devem ser usadas como estão em um
+        ambiente real.
+      </p>
+
+      <div class="tabela-credenciais">
+        <div class="credencial-cabecalho">
+          <span>Credencial</span>
+          <span>Valor padrão no repositório</span>
+          <span>Variável para trocar</span>
+        </div>
+        <div class="credencial-linha">
+          <span class="credencial-nome">SQL Server (usuário <code>sa</code>)</span>
+          <span class="credencial-valor">
+            <code class="valor-mascarado" data-valor="Fluxo@Caixa2026!">••••••••••••••••</code>
+            <button class="botao-olho" onclick="alternarVisibilidade(this)" aria-label="Mostrar valor">👁</button>
+          </span>
+          <span class="credencial-var"><code>MSSQL_SA_PASSWORD</code></span>
+        </div>
+        <div class="credencial-linha">
+          <span class="credencial-nome">RabbitMQ Management</span>
+          <span class="credencial-valor">
+            <code class="valor-mascarado" data-valor="guest / guest">••••• / •••••</code>
+            <button class="botao-olho" onclick="alternarVisibilidade(this)" aria-label="Mostrar valor">👁</button>
+          </span>
+          <span class="credencial-var"><code>RABBITMQ_DEFAULT_USER</code> / <code>RABBITMQ_DEFAULT_PASS</code></span>
+        </div>
+        <div class="credencial-linha">
+          <span class="credencial-nome">Grafana (admin)</span>
+          <span class="credencial-valor">
+            <code class="valor-mascarado" data-valor="admin">•••••</code>
+            <button class="botao-olho" onclick="alternarVisibilidade(this)" aria-label="Mostrar valor">👁</button>
+          </span>
+          <span class="credencial-var"><code>GF_SECURITY_ADMIN_PASSWORD</code></span>
+        </div>
+        <div class="credencial-linha">
+          <span class="credencial-nome">Chave de assinatura JWT</span>
+          <span class="credencial-valor">
+            <code class="valor-mascarado" data-valor="CHANGE_ME_MINIMUM_32_CHARACTERS_SECRET">••••••••••••••••••••••••••••••••••••••</code>
+            <button class="botao-olho" onclick="alternarVisibilidade(this)" aria-label="Mostrar valor">👁</button>
+          </span>
+          <span class="credencial-var"><code>Jwt__SigningKey</code></span>
+        </div>
+        <div class="credencial-linha">
+          <span class="credencial-nome">Login do painel (usuário <code>admin</code>)</span>
+          <span class="credencial-valor">
+            <code class="valor-mascarado" data-valor="admin123">••••••••</code>
+            <button class="botao-olho" onclick="alternarVisibilidade(this)" aria-label="Mostrar valor">👁</button>
+          </span>
+          <span class="credencial-var"><code>DashboardAuth__Usuario</code> / <code>DashboardAuth__SenhaHash</code></span>
+        </div>
+      </div>
+      <p class="tabela-legenda">
+        Os valores acima são exatamente os que estão hoje em <code>docker-compose.yml</code> — não
+        são genéricos. Clique no ícone de olho para revelar cada um. Troque-os editando o próprio
+        arquivo (ou sobrepondo via
+        variáveis de ambiente do host) antes de subir um ambiente que não seja uma estação local
+        isolada.
+      </p>
+      <div class="info-caixa">
+        <strong>Importante sobre o login do painel:</strong> <code>DashboardAuth__SenhaHash</code>
+        espera o hash SHA-256 da senha, não a senha em texto puro. Calcule o novo hash antes de
+        trocar — em PowerShell:
+        <code>[System.BitConverter]::ToString([System.Security.Cryptography.SHA256]::Create().ComputeHash([System.Text.Encoding]::UTF8.GetBytes("sua-senha-nova"))).Replace("-","").ToLower()</code>
+      </div>
+
+      <div class="checklist">
+        <label class="checklist-item">
+          <input type="checkbox" id="chk-ambiente-dev" onchange="atualizarCredenciais()">
+          <div>
+            <strong>Este é um ambiente de desenvolvimento/demonstração local</strong>
+            <p>Mantenho as credenciais padrão do repositório — aceitável apenas para uso local isolado.</p>
+          </div>
+        </label>
+      </div>
+
+      <div class="aviso-caixa aviso-producao" id="aviso-producao" style="display: none;">
+        Em qualquer ambiente acessível por mais de uma pessoa ou pela rede, troque todas as
+        credenciais acima antes de subir os containers, e defina
+        <code>Orchestration__AmbienteProducao=true</code> na configuração do
+        <code>statuspage-api</code> — isso bloqueia no backend qualquer tentativa de rodar scripts
+        de schema ou seed de demonstração contra esse ambiente pelo painel.
+      </div>
+
+      <div class="etapa-acoes">
+        <button class="botao botao-secundario" onclick="irParaEtapa(3)">Voltar</button>
+        <button class="botao botao-primario" onclick="irParaEtapa(5)">Avançar</button>
+      </div>
+    </section>
+
+    <!-- Etapa 5: Subir o ambiente -->
+    <section class="etapa" data-etapa="5">
+      <h2>Subir o ambiente</h2>
+      <p class="etapa-descricao">
+        A partir da raiz do repositório, execute o comando abaixo. Ele constrói as imagens dos
+        três serviços .NET e inicia toda a stack: SQL Server, RabbitMQ, Lançamentos, Consolidado,
+        o painel, Prometheus, Grafana e Alertmanager.
+      </p>
+
+      <div class="comando-caixa">
+        <code id="comando-subir">docker compose up -d --build</code>
+        <button class="botao botao-secundario" onclick="copiar('comando-subir')">Copiar</button>
+      </div>
+
+      <div class="info-caixa">
+        A primeira execução leva alguns minutos (build das imagens .NET e download das imagens
+        base). Execuções seguintes são mais rápidas, já que o Docker reaproveita as camadas já
+        construídas.
+      </div>
+
+      <div class="etapa-acoes">
+        <button class="botao botao-secundario" onclick="irParaEtapa(4)">Voltar</button>
+        <button class="botao botao-primario" onclick="irParaEtapa(6)">Já executei o comando</button>
+      </div>
+    </section>
+
+    <!-- Etapa 6: Verificação de saúde -->
+    <section class="etapa" data-etapa="6">
+      <h2>Verificar se os serviços subiram corretamente</h2>
+      <p class="etapa-descricao">
+        Clique em verificar para testar se o painel e as APIs de negócio já estão respondendo.
+        Isso pode levar alguns minutos na primeira subida, enquanto o SQL Server inicializa.
+      </p>
+
+      <div class="verificacao-grid" id="verificacao-grid">
+        <div class="verificacao-item" data-servico="painel">
+          <span class="verificacao-nome">Painel (statuspage-api)</span>
+          <span class="verificacao-status status-pendente">Não verificado</span>
+        </div>
+        <div class="verificacao-item" data-servico="lancamentos">
+          <span class="verificacao-nome">Lançamentos API</span>
+          <span class="verificacao-status status-pendente">Não verificado</span>
+        </div>
+        <div class="verificacao-item" data-servico="consolidado">
+          <span class="verificacao-nome">Consolidado API</span>
+          <span class="verificacao-status status-pendente">Não verificado</span>
+        </div>
+      </div>
+
+      <div class="etapa-acoes">
+        <button class="botao botao-secundario" onclick="irParaEtapa(5)">Voltar</button>
+        <button class="botao botao-secundario" id="btn-verificar" onclick="verificarServicos()">Verificar agora</button>
+        <button class="botao botao-primario" id="btn-avancar-verificacao" onclick="irParaEtapa(7)">Avançar</button>
+      </div>
+    </section>
+
+    <!-- Etapa 7: Pós-instalação -->
+    <section class="etapa" data-etapa="7">
+      <h2>Passos pós-instalação (opcionais)</h2>
+      <p class="etapa-descricao">
+        As tabelas e a política de Row-Level Security são aplicadas automaticamente na primeira
+        subida — nenhum passo manual é necessário para isso. Os dois itens abaixo são opcionais e
+        ficam disponíveis diretamente no painel, na seção "Ações de instalação e carga".
+      </p>
+
+      <div class="checklist checklist-informativo">
+        <div class="checklist-item">
+          <span class="checklist-icone">🗄️</span>
+          <div>
+            <strong>Aplicar scripts de banco manualmente</strong>
+            <p>Útil apenas se você quiser reaplicar o schema contra um SQL Server externo ao Docker Compose. O painel pede confirmação do servidor de destino antes de executar, e fica bloqueado enquanto a aplicação estiver em uso.</p>
+          </div>
+        </div>
+        <div class="checklist-item">
+          <span class="checklist-icone">🌱</span>
+          <div>
+            <strong>Popular dados de demonstração</strong>
+            <p>Gera uma carteira de ~20 comerciantes com 30 dias de lançamentos simulados, via chamadas reais às APIs — útil para explorar o dashboard e os relatórios com dados reais em vez de um ambiente vazio.</p>
+          </div>
+        </div>
+        <div class="checklist-item">
+          <span class="checklist-icone">🔑</span>
+          <div>
+            <strong>Gerar um token de autenticação de teste</strong>
+            <p>Necessário para chamar as APIs de negócio diretamente (via Swagger ou um cliente HTTP). Disponível na última seção do painel.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="etapa-acoes">
+        <button class="botao botao-secundario" onclick="irParaEtapa(6)">Voltar</button>
+        <button class="botao botao-primario" onclick="irParaEtapa(8)">Concluir</button>
+      </div>
+    </section>
+
+    <!-- Etapa 8: Conclusão -->
+    <section class="etapa" data-etapa="8">
+      <div class="conclusao">
+        <span class="icone-grande">🎉</span>
+        <h2>Instalação assistida concluída</h2>
+        <p class="etapa-descricao">
+          O ambiente está pronto para uso. A partir de agora, use o painel para acompanhar a
+          saúde dos serviços, consultar a documentação de arquitetura e executar as ações
+          operacionais do dia a dia.
+        </p>
+        <a class="botao botao-primario botao-grande" href="http://localhost:5100" target="_blank" rel="noopener">Abrir o painel</a>
+        <button class="botao-texto" onclick="irParaEtapa(1)">Rever a instalação assistida desde o início</button>
+      </div>
+    </section>
+
+  </main>
+
+</div>
+
+<script src="onboarding.js"></script>
+</body>
+</html>

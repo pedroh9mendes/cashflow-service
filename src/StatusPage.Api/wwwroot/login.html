@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CashFlow Service — Login do painel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+  }
+
+  .login-caixa {
+    background: var(--cor-superficie);
+    border-radius: var(--raio);
+    box-shadow: var(--sombra-elevada);
+    padding: 40px;
+    max-width: 380px;
+    width: 100%;
+  }
+
+  .login-marca {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+
+  .login-marca img {
+    height: 34px;
+  }
+
+  .login-caixa h1 {
+    font-size: 1.15rem;
+    text-align: center;
+    margin: 0 0 6px;
+  }
+
+  .login-caixa p.subtitulo {
+    text-align: center;
+    color: var(--cor-texto-secundario);
+    font-size: 0.85rem;
+    margin: 0 0 24px;
+  }
+
+  .login-campo {
+    margin-bottom: 14px;
+  }
+
+  .login-campo label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--cor-texto-secundario);
+    margin-bottom: 4px;
+  }
+
+  .login-campo input {
+    width: 100%;
+    border: 1px solid var(--cor-borda);
+    border-radius: var(--raio-pequeno);
+    padding: 10px 12px;
+    font-size: 0.9rem;
+    font-family: inherit;
+  }
+
+  .login-campo input:focus {
+    outline: 2px solid var(--cor-primaria);
+    outline-offset: 1px;
+  }
+
+  .login-botao {
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  .login-erro {
+    display: none;
+    background: #fdeaea;
+    border: 1px solid #f0b8b8;
+    color: var(--cor-erro);
+    border-radius: var(--raio-pequeno);
+    padding: 10px 12px;
+    font-size: 0.8rem;
+    margin-bottom: 14px;
+  }
+
+  .login-erro.visivel {
+    display: block;
+  }
+
+  .login-rodape {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 0.76rem;
+  }
+
+  .login-rodape a {
+    color: var(--cor-primaria);
+    font-weight: 600;
+    text-decoration: none;
+  }
+</style>
+</head>
+<body>
+
+<div class="login-caixa">
+  <div class="login-marca">
+    <img src="assets/carrefour-banco-logo.png" alt="Carrefour Banco" />
+  </div>
+  <h1>Painel de operação</h1>
+  <p class="subtitulo">CashFlow Service</p>
+
+  <div class="login-erro" id="login-erro">Usuário ou senha inválidos.</div>
+
+  <form id="form-login">
+    <div class="login-campo">
+      <label for="input-usuario">Usuário</label>
+      <input type="text" id="input-usuario" autocomplete="username" required>
+    </div>
+    <div class="login-campo">
+      <label for="input-senha">Senha</label>
+      <input type="password" id="input-senha" autocomplete="current-password" required>
+    </div>
+    <button type="submit" class="botao botao-primario login-botao" id="btn-entrar">Entrar</button>
+  </form>
+
+  <p class="login-rodape">
+    Procurando a página de status pública? <a href="/status">Acesse aqui</a>
+  </p>
+</div>
+
+<script src="login.js"></script>
+</body>
+</html>
