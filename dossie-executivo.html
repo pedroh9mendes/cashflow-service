@@ -149,6 +149,23 @@ code {
 }
 .pagina:last-of-type { border-bottom: none; }
 
+/* ===== Seção condensada (Apêndices/Referências): fonte reduzida em tudo,
+   inclusive títulos, para não competir em destaque com o corpo do documento
+   e caber em uma única página A4 impressa. ===== */
+.pagina-condensada { padding-top: 32px; padding-bottom: 32px; }
+.pagina-condensada .rotulo-secao { font-size: .62rem; padding: 3px 9px; margin-bottom: 8px; }
+.pagina-condensada h2 { font-size: .95rem; margin-bottom: 8px; }
+.pagina-condensada h3 { font-size: .8rem; margin: 14px 0 6px; color: var(--cor-primaria-escura); }
+.pagina-condensada .subtitulo { font-size: .72rem; margin-bottom: 10px; }
+.pagina-condensada p { font-size: .72rem; margin-bottom: 8px; }
+.pagina-condensada ul, .pagina-condensada ol { font-size: .72rem; margin: 6px 0; padding-left: 20px; }
+.pagina-condensada li { margin-bottom: 4px; }
+.pagina-condensada table { font-size: .7rem; margin: 8px 0; }
+.pagina-condensada th, .pagina-condensada td { padding: 5px 8px; }
+.pagina-condensada .caixa-info { font-size: .7rem; padding: 10px 14px; margin: 8px 0; }
+.pagina-condensada .lista-referencias { margin: 8px 0; }
+.pagina-condensada .lista-referencias li { font-size: .62rem; margin-bottom: 5px; }
+
 .rotulo-secao {
   display: inline-block;
   background: var(--cor-primaria-clara);
@@ -218,15 +235,10 @@ p { margin: 0 0 14px; }
 .capa-resumo-item .valor { font-size: 1.15rem; font-weight: 800; letter-spacing: -.02em; color: var(--cor-primaria-escura); }
 .capa-resumo-item .composicao { font-size: .78rem; color: var(--cor-texto-secundario); margin-top: 6px; line-height: 1.4; }
 
-/* ===== Lista de referências (ABNT NBR 6023: sem marcador, alinhamento à esquerda, espaço entre itens) ===== */
+/* ===== Lista de referências (ABNT NBR 6023: sem marcador, alinhamento à esquerda, espaço entre itens).
+   Tamanho de fonte é definido por .pagina-condensada .lista-referencias li, mais abaixo. ===== */
 .lista-referencias { list-style: none; padding: 0; margin: 20px 0; }
-.lista-referencias li {
-  font-size: .9rem;
-  line-height: 1.5;
-  margin-bottom: 14px;
-  padding-left: 0;
-  text-align: left;
-}
+.lista-referencias li { line-height: 1.5; padding-left: 0; text-align: left; }
 
 /* ===== Listas formais (ilustrações/tabelas) ===== */
 .lista-formal { font-size: .88rem; }
@@ -1581,12 +1593,12 @@ tr:nth-child(even) td { background: #fafbfd; }
 </section>
 
 <!-- ===================== APÊNDICES ===================== -->
-<section class="pagina" id="apendices">
+<section class="pagina pagina-condensada" id="apendices">
   <span class="rotulo-secao">Apêndices</span>
   <h2>Memória de Cálculo, Fontes e Glossário</h2>
 
   <h3>Memória de cálculo — investimento inicial</h3>
-  <div class="caixa-info" style="font-family:'SFMono-Regular',Consolas,monospace; font-size:.82rem">
+  <div class="caixa-info" style="font-family:'SFMono-Regular',Consolas,monospace">
     Capacidade = 40h/semana × 0.8 × 6 semanas × 2 devs = 384h<br>
     Custo de equipe = 384h × US$ 150/h = US$ 57.600<br>
     Contingência = US$ 57.600 × 0.15 = US$ 8.640<br>
@@ -1594,7 +1606,7 @@ tr:nth-child(even) td { background: #fafbfd; }
   </div>
 
   <h3>Memória de cálculo — TCO cenário base</h3>
-  <div class="caixa-info" style="font-family:'SFMono-Regular',Consolas,monospace; font-size:.82rem">
+  <div class="caixa-info" style="font-family:'SFMono-Regular',Consolas,monospace">
     Operação mensal (base) = 600 + 1050 + 100 + 125 + 65 + 100 = US$ 2.040/mês<br>
     Operação 12m = US$ 2.040 × 12 = US$ 24.480<br>
     Operação 36m = US$ 2.040 × 36 = US$ 73.440<br>
@@ -1603,7 +1615,7 @@ tr:nth-child(even) td { background: #fafbfd; }
   </div>
 
   <h3>Fontes</h3>
-  <p style="font-size:.85rem">Valores de infraestrutura são estimativas de ordem de grandeza baseadas em faixas de preço públicas conhecidas da documentação oficial dos serviços equivalentes (MICROSOFT, 2026) — App Service/AKS, SQL Database/Managed Instance, serviços gerenciados de mensageria —, <strong>não uma cotação formal obtida junto ao provedor na data deste documento</strong>. Antes de qualquer compromisso orçamentário, obter cotação atualizada diretamente no portal de precificação do provedor escolhido, com a região, SKU e modalidade de compra (pay-as-you-go vs. reserva) confirmadas. Ver Referências para a lista completa de fontes técnicas consultadas.</p>
+  <p>Valores de infraestrutura são estimativas de ordem de grandeza baseadas em faixas de preço públicas conhecidas da documentação oficial dos serviços equivalentes (MICROSOFT, 2026) — App Service/AKS, SQL Database/Managed Instance, serviços gerenciados de mensageria —, <strong>não uma cotação formal obtida junto ao provedor na data deste documento</strong>. Antes de qualquer compromisso orçamentário, obter cotação atualizada diretamente no portal de precificação do provedor escolhido, com a região, SKU e modalidade de compra (pay-as-you-go vs. reserva) confirmadas. Ver Referências para a lista completa de fontes técnicas consultadas.</p>
 
   <h3>Glossário</h3>
   <table>
@@ -1616,7 +1628,7 @@ tr:nth-child(even) td { background: #fafbfd; }
   </table>
 
   <h3>Limitações desta análise</h3>
-  <ul style="font-size:.85rem">
+  <ul>
     <li>Números financeiros são estimativas de ordem de grandeza, não cotações formais — ver seção Fontes.</li>
     <li>Proto-persona e hipótese de valor não foram validadas com usuários reais — ver seção Usuários e Jornada.</li>
     <li>Estimativas de esforço (horas-pessoa) não se baseiam em velocity histórica real da squad, por não haver histórico disponível nesta fase.</li>
@@ -1625,7 +1637,7 @@ tr:nth-child(even) td { background: #fafbfd; }
 </section>
 
 <!-- ===================== REFERÊNCIAS ===================== -->
-<section class="pagina" id="referencias">
+<section class="pagina pagina-condensada" id="referencias">
   <span class="rotulo-secao">Elementos Pós-textuais</span>
   <h2>Referências</h2>
   <p class="subtitulo">Fontes técnicas das tecnologias e plataformas citadas ao longo deste documento, no padrão ABNT NBR 6023.</p>
@@ -1639,7 +1651,7 @@ tr:nth-child(even) td { background: #fafbfd; }
     <li>GRAFANA LABS. <em>Grafana Documentation</em>. 2026. Disponível em: https://grafana.com/docs/. Acesso em: out. 2026.</li>
   </ul>
 
-  <p style="font-size:.78rem; color:var(--cor-texto-secundario); margin-top:20px">As URLs acima referem-se à documentação oficial estável de cada tecnologia, não a cotações de preço específicas — ver seção Fontes (Apêndices) para a ressalva sobre a natureza estimativa dos valores de infraestrutura citados neste documento.</p>
+  <p style="color:var(--cor-texto-secundario); margin-top:10px">As URLs acima referem-se à documentação oficial estável de cada tecnologia, não a cotações de preço específicas — ver seção Fontes (Apêndices) para a ressalva sobre a natureza estimativa dos valores de infraestrutura citados neste documento.</p>
 </section>
 
 </div>
